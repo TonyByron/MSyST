@@ -1,0 +1,76 @@
+---
+title: \titulo
+author: \Tony
+date: "`r Sys.Date()`"
+output:
+  bookdown::pdf_document2:
+    toc: false
+    number_sections: true
+    latex_engine: xelatex
+    keep_tex: true
+    includes:
+      in_header: plantilla/preambulo.tex
+documentclass: article
+classoption:
+  - 12pt
+  - titlepage
+geometry: "a4paper, includeheadfoot, margin=2.54cm"
+---
+
+
+
+\begin{comment}
+\clearpage\thispagestyle{empty}\mbox{}\setcounter{page}{0}\clearpage
+\end{comment}
+
+```{r setup, include=FALSE}
+rm(list = ls(all.names = TRUE))
+gc()
+
+knitr::opts_chunk$set(
+  eval    = FALSE,
+  echo    = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center",
+  fig.width = 7,
+  fig.height = 4
+)
+setwd("~/F_Ciencias/2027-1/Series_de_tiempo/Tareas/Tarea_practica_1")
+```
+
+```{r paquetes, include=FALSE}
+library(tidyverse)
+library(tsibble)
+library(feasts)
+library(forecast)
+library(scales)
+library(knitr)
+library(kableExtra)
+```
+
+\begin{comment}
+\tableofcontents{}
+\newpage
+\end{comment}
+
+# Introducción
+
+## Descripción de los datos
+
+Los datos utilizados en este análisis corresponden al registro de la **afluencia diaria del Sistema de Transporte Colectivo (STC) Metro de la Ciudad de México**, publicados como datos abiertos por el gobierno de la CDMX. El conjunto de datos comprende el período del **1 de enero de 2021 al 31 de julio de 2026**, con registros a nivel de estación, línea y tipo de pago (boleto, prepago y gratuidad).
+
+Dado que el an'alis que realizaremos se limita a la \texttt{L'inea 12} del metro
+
+```{r carga-datos}
+datos_raw <- read_csv(
+  "Data/Afluencia_L12_Metro_CDMX.csv",
+  locale = locale(encoding = "UTF-8"),
+  show_col_types = FALSE
+)
+```
+
+
+
+
+

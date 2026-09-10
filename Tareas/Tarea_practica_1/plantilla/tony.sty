@@ -1,0 +1,142 @@
+% Escritura de acentos:
+%--------------------------------------------------------------------------
+
+%\usepackage[utf8]{inputenc}
+\usepackage{fontenc}
+
+
+% Paquete para generar texto de relleno. Se puede eliminar
+%--------------------------------------------------------------------------
+
+\usepackage{lipsum}
+
+
+
+% Formato de los índices
+%--------------------------------------------------------------------------
+\usepackage[colorlinks = true, linkcolor = black, urlcolor = blue]{hyperref} % referencias interactivas
+%\usepackage{tocloft} % paquete de diseño tipográfico
+
+%\renewcommand{\cftsecfont}{\normalfont} % evita que los títulos del índice aparezcan en negrita
+%\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}} % crea una línea de puntos entre el índice y el número
+
+
+% Paquetes de la AMS
+%--------------------------------------------------------------------------
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+
+
+% Paquetes de símbolos usuales y de formato de ecuaciones
+%--------------------------------------------------------------------------
+
+\usepackage{textcomp}
+%\usepackage{mathtools}
+\usepackage{commath}
+
+
+% Paquetes para la inserción de imágenes y figuras
+%--------------------------------------------------------------------------
+
+\usepackage{float}
+\usepackage{graphicx}
+%\usepackage{epstopdf}
+\usepackage{caption}
+
+
+% Dimensiones de página
+%--------------------------------------------------------------------------
+
+\usepackage[a4paper,includeheadfoot,margin=2.54cm]{geometry}
+
+
+% Paquetes y configuración para la inserción de código
+% Por defecto los colores emulan los del editor de MATLAB
+%--------------------------------------------------------------------------
+
+\usepackage{color} % paquete de color y definición de los colores a usar
+
+
+
+% Teoremas
+%--------------------------------------------------------------------------
+
+\newtheorem{thm}{Teorema}
+\newtheorem*{thm*}{Teorema}
+\newtheorem{cor}[thm]{Corolario}
+\newtheorem{lem}[thm]{Lema}
+\newtheorem{prop}[thm]{Proposición}
+\theoremstyle{definition}
+\newtheorem{defn}[thm]{Definición}
+\newtheorem*{defn*}{Definición}
+\theoremstyle{remark}
+\newtheorem{rem}[thm]{Observación}
+
+
+
+% Atajos.
+% Se pueden definir comandos nuevos para acortar cosas que se usan
+% frecuentemente. Como ejemplo, aquí se definen las letras dobles usadas para
+% los conjuntos de los números naturales, enteros, racionales, reales
+% y complejos.
+%--------------------------------------------------------------------------
+
+\def\N{\mathbb{N}}
+\def\Z{\mathbb{Z}}
+\def\Q{\mathbb{Q}}
+\def\R{\mathbb{R}}
+\def\C{\mathbb{C}}
+
+
+
+% Encabezado y pie de página (no es necesaria modificación)
+%--------------------------------------------------------------------------
+
+\usepackage{fancyhdr} % Paquete de estilo 
+
+\pagestyle{fancy} % selección del estilo
+\fancyhf{}
+
+\renewcommand{\headrulewidth}{0.5pt} % Grosor de las líneas
+\renewcommand{\footrulewidth}{0.5pt}
+
+\setlength{\headheight}{14.49998pt}
+\lhead{\scshape \materia} 
+\rhead{\TituloTarea}
+\lfoot{\Tony}
+\rfoot{\thepage}
+
+
+
+
+% Selección de idioma (español)
+%--------------------------------------------------------------------------
+
+\usepackage{fontspec}      % Si no lo tienes, añádelo antes de babel
+\usepackage[spanish,es-tabla,activeacute]{babel}
+\selectlanguage{spanish}
+
+% Título, autor, materia y fecha (rellenar)
+%--------------------------------------------------------------------------
+
+\newcommand{\titulo}{
+    
+    \includegraphics[width=0.3\textwidth]{escudo0.png}\par\vspace{0.3cm}
+		
+		{\scshape\LARGE Facultad de Ciencias\par}
+		
+		\vspace{5mm}
+		
+		{\scshape\Large \materia \par}
+		
+		\vspace{1cm}
+		
+		{\huge\bfseries \TituloTarea \par}
+    
+}
+
+\newcommand{\Tony}{\textsc{Anthonie Byron Ornelas Clement}}
+
