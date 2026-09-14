@@ -36,7 +36,6 @@ knitr::opts_chunk$set(
   fig.width = 7,
   fig.height = 4
 )
-setwd("~/F_Ciencias/2027-1/Series_de_tiempo/Tareas/Tarea_practica_1")
 ```
 
 ```{r paquetes, include=FALSE}
@@ -113,7 +112,7 @@ El período no puede analizarse como una sola serie continua. El **3 de mayo de 
 
 
 ```{r tabla de estaciones en servicio}
-fecha <- c("15 ene 2023", "16 jul 2023", "10--18 ene 2024")
+fecha <- c("15 ene 2023", "16 jul 2023", "23--29 ene 2024")
 estaciones <- c("9 de 20", "14 de 20", "20 de 20")
 
 servicio <- data.frame(Fecha = fecha, "Estaciones en servicio" = estaciones)
@@ -123,7 +122,7 @@ tabla2(servicio)
 ```
 
 
-El análisis de serie de tiempo se enfoca, por tanto, en el período de **operación plena** (15 enero 2024 -- 31 diciembre 2025, 717 días), la única etapa que refleja el comportamiento real de la línea completa.
+El análisis de serie de tiempo se enfoca, por tanto, en el período de **operación plena** (30 enero 2024 -- 31 diciembre 2025, 702 días), la única etapa que refleja el comportamiento real de la línea completa.
 
 ```{r carga-datos}
 datos_raw <- read_csv(
@@ -144,7 +143,7 @@ datos_diario <- datos_raw |>
       fecha < "2021-05-04"  ~ "Pre-accidente",
       fecha < "2023-01-15"  ~ "Cierre",
       fecha < "2023-07-16"  ~ "Reapertura (9 est.)",
-      fecha < "2024-01-10"  ~ "Reapertura (14 est.)",
+      fecha < "2024-01-30"  ~ "Reapertura (14 est.)",
       TRUE                  ~ "Operación plena"
     ),
     etapa = factor(etapa, levels = c(
@@ -154,7 +153,7 @@ datos_diario <- datos_raw |>
   )
 
 datos_pleno <- datos_diario |>
-  filter(fecha >= "2024-01-15") |>
+  filter(fecha >= "2024-01-30") |>
   mutate(
     num_dia    = wday(fecha),
     dia_semana = factor(dias_es[num_dia], levels = dias_es),
@@ -180,8 +179,8 @@ colores_etapa <- c(
 )
 
 franjas <- tibble(
-  inicio = as.Date(c("2021-01-01", "2021-05-04", "2023-01-15", "2023-07-16", "2024-01-10")),
-  fin    = as.Date(c("2021-05-03", "2023-01-14", "2023-07-15", "2024-01-09", "2025-12-31")),
+  inicio = as.Date(c("2021-01-01", "2021-05-04", "2023-01-15", "2023-07-16", "2024-01-30")),
+  fin    = as.Date(c("2021-05-03", "2023-01-14", "2023-07-15", "2024-01-29", "2025-12-31")),
   etapa  = factor(
     c("Pre-accidente", "Cierre", "Reapertura (9 est.)",
       "Reapertura (14 est.)", "Operación plena"),
@@ -239,7 +238,7 @@ El análisis se realiza sobre la serie de operación plena (15 enero 2024 -- 31 
 
 ```{r descomposicion, fig.cap="Descomposición STL de la afluencia diaria en el período de operación plena.", fig.height=5.5}
 componentes <- serie_ts |>
-  model(STL(afluencia ~ season(period = 7))) |>
+  model(STL(afluencia ~ season(period = 7, window = "periodic"))) |>
   components() |>
   as_tibble()
 
