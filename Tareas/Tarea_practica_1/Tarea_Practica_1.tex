@@ -122,30 +122,27 @@
 \begin{document}
 \maketitle
 
-\begin{comment}
-\clearpage\thispagestyle{empty}\mbox{}\setcounter{page}{0}\clearpage
-\end{comment}
-
-\begin{comment}
-\tableofcontents{}
-\newpage
-\end{comment}
-
 \section{Introducción}\label{introducciuxf3n}
 
-\subsection{El problema}\label{el-problema}
+\subsection{¿Qué queremos responder?}\label{quuxe9-queremos-responder}
 
-La \textbf{Línea 12} del Sistema de Transporte Colectivo (STC) Metro de la Ciudad de México conecta Mixcoac con Tláhuac a lo largo de 24.5 km y 20 estaciones. Con más de 300,000 pasajeros en un día laboral típico, es una de las rutas más importantes para la movilidad en la zona oriente--suroriente de la ciudad.
+La \textbf{Línea 12 del Sistema de Transporte Colectivo (STC) Metro de la Ciudad de México} conecta Mixcoac con Tláhuac a lo largo de 24.5 km y 20 estaciones. Por su importancia para la movilidad de la ciudad, cualquier trabajo de mantenimiento puede tener un efecto directo sobre un gran número de usuarios.
 
-Mantener la infraestructura en condiciones óptimas sin interrumpir el servicio es un desafío constante. Las intervenciones de mantenimiento inevitablemente reducen la capacidad operativa de la línea, y eso tiene un costo directo para quienes dependen de ella.
+El propósito de este análisis no es solamente describir cuántas personas utilizan la línea. Buscamos identificar \textbf{cuándo la demanda es menor y qué patrones se repiten en el tiempo}, de modo que esa información pueda servir como apoyo para planear actividades de mantenimiento procurando reducir el impacto sobre los pasajeros.
 
-La pregunta que orienta este análisis es práctica: \textbf{¿cuándo tiene la línea menos pasajeros de manera predecible?} Si la demanda sigue patrones estables ---días de la semana, épocas del año--- es posible programar el mantenimiento en esas ventanas para minimizar el impacto sobre los usuarios.
+La pregunta principal es:
+
+\begin{quote}
+\textbf{¿En qué momentos la Línea 12 presenta una menor afluencia de manera suficientemente consistente como para considerarlos una posible ventana de mantenimiento?}
+\end{quote}
 
 \subsection{Los datos}\label{los-datos}
 
-Los datos provienen del registro de \textbf{afluencia diaria por estación} publicados como datos abiertos por el Gobierno de la CDMX. Se analizan los registros de la Línea 12 entre el \textbf{1 de enero de 2021 y el 31 de diciembre de 2025} (1,826 días, 20 estaciones).
+Los datos corresponden a la \textbf{afluencia diaria por estación} publicados como datos abiertos por el Gobierno de la Ciudad de México. Para este trabajo se consideran los registros del \textbf{1 de enero de 2021 al 31 de diciembre de 2025}, para las 20 estaciones de la Línea 12.
 
-El período no puede analizarse como una sola serie continua. El \textbf{3 de mayo de 2021}, el colapso de un tramo elevado entre las estaciones Olivos y Tezonco dejó la línea completamente fuera de operación durante 621 días. La reapertura fue gradual y escalonada:
+Cada observación representa la cantidad de pasajeros registrada en una fecha. Para obtener una sola cifra diaria para toda la línea, se sumó la afluencia de las estaciones correspondientes a cada día.
+
+Sin embargo, no sería adecuado tratar todo el período como si la línea hubiera operado bajo las mismas condiciones. El \textbf{3 de mayo de 2021} ocurrió el colapso de un tramo elevado entre las estaciones Olivos y Tezonco. Después del accidente, la línea permaneció cerrada y posteriormente reabrió por etapas:
 
 \begingroup\fontsize{10}{12}\selectfont
 
@@ -162,11 +159,56 @@ El período no puede analizarse como una sola serie continua. El \textbf{3 de ma
 \end{longtable}
 \endgroup{}
 
-El análisis de serie de tiempo se enfoca, por tanto, en el período de \textbf{operación plena} (30 enero 2024 -- 31 diciembre 2025, 702 días), la única etapa que refleja el comportamiento real de la línea completa.
+Para estudiar el comportamiento habitual de la demanda, centraremos el análisis estadístico en el período de \textbf{operación plena}, del \textbf{30 de enero de 2024 al 31 de diciembre de 2025}. Este período contiene 702 días y corresponde a la etapa en la que las 20 estaciones estaban nuevamente en operación.
 
-\section{Gráfico de los datos con interpretación}\label{gruxe1fico-de-los-datos-con-interpretaciuxf3n}
+\subsection{¿Por qué usamos una serie de tiempo?}\label{por-quuxe9-usamos-una-serie-de-tiempo}
 
-\subsection{La trayectoria de la Línea 12, 2021--2025}\label{la-trayectoria-de-la-luxednea-12-20212025}
+Una \textbf{serie de tiempo} es simplemente un conjunto de mediciones ordenadas por fecha. Su ventaja es que no solamente permite saber cuánto ocurrió, sino también observar \textbf{cómo cambia y qué comportamientos se repiten}.
+
+En este caso nos interesan tres preguntas muy sencillas:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  ¿La cantidad de pasajeros está aumentando o disminuyendo con el tiempo?
+\item
+  ¿Hay días de la semana con una demanda sistemáticamente mayor o menor?
+\item
+  ¿Qué tan diferente es cada día respecto al comportamiento que normalmente esperaríamos?
+\end{enumerate}
+
+Estas preguntas guían los gráficos y transformaciones que se presentan en las siguientes secciones.
+
+\section{Objetivo y metodología}\label{objetivo-y-metodologuxeda}
+
+\subsection{Objetivo}\label{objetivo}
+
+El objetivo es \textbf{identificar los principales patrones temporales de la afluencia de pasajeros de la Línea 12 durante su período de operación plena}, con énfasis en aquellos patrones que puedan ser útiles para la planeación de mantenimiento.
+
+En particular, se busca:
+
+\begin{itemize}
+\tightlist
+\item
+  describir el comportamiento general de la afluencia;
+\item
+  identificar el patrón semanal de demanda;
+\item
+  separar la evolución en el tiempo del comportamiento que se repite cada semana; y
+\item
+  aplicar transformaciones que permitan estudiar los cambios de la serie de una forma más adecuada.
+\end{itemize}
+
+\subsection{Metodología}\label{metodologuxeda}
+
+El procedimiento se puede resumir en cuatro pasos. Primero, se agregan los registros por estación para obtener la afluencia total de cada día. Después se selecciona el período de operación plena para evitar mezclar situaciones operativas muy distintas. A continuación, se utilizan gráficos y una descomposición de la serie para distinguir los patrones principales. Finalmente, se aplican transformaciones que ayudan a comparar los cambios de la demanda a lo largo del tiempo.
+
+\emph{Nota técnica: el análisis de componentes se realiza mediante la descomposición clásica \texttt{decompose()} y las transformaciones incluyen una escala logarítmica, una diferencia de orden 1 y una diferencia estacional de periodo 7.}
+
+\section{Comportamiento de la afluencia}\label{comportamiento-de-la-afluencia}
+
+\subsection{La historia de la Línea 12, 2021--2025}\label{la-historia-de-la-luxednea-12-20212025}
 
 \begin{figure}
 
@@ -174,12 +216,18 @@ El análisis de serie de tiempo se enfoca, por tanto, en el período de \textbf{
 
 }
 
-\caption{Afluencia diaria de la Línea 12 (2021--2025). Las franjas delimitan cada etapa operativa de la línea.}\label{fig:grafico-historia}
+\caption{Afluencia diaria de la Línea 12 entre 2021 y 2025. Las franjas distinguen las principales etapas de operación.}\label{fig:grafico-historia}
 \end{figure}
 
-La figura \ref{fig:grafico-historia} resume cinco años de la Línea 12. El quiebre del 3 de mayo de 2021 es inconfundible: 621 días sin un solo pasajero. Lo más relevante para este análisis es lo que ocurre después de la reapertura completa en enero de 2024: la afluencia no sólo se recuperó, sino que supera los niveles previos al accidente y muestra una tendencia de crecimiento sostenido. Eso significa que la infraestructura opera bajo una carga creciente, lo que hace del mantenimiento preventivo una necesidad cada vez más urgente.
+\textbf{¿Qué debemos observar?} La serie cambia de manera muy clara cuando cambia la situación operativa de la línea. Primero observamos la operación previa al accidente, después un cierre prolongado y finalmente una reapertura gradual hasta llegar a la operación con las 20 estaciones. Por esta razón, el análisis de patrones habituales se concentra en la etapa final.
 
-\subsection{El ciclo semanal: la ventana de oportunidad}\label{el-ciclo-semanal-la-ventana-de-oportunidad}
+La figura también muestra que la afluencia durante 2024--2025 presenta una recuperación y una evolución ascendente. Para el problema planteado, esto es importante porque una misma diferencia absoluta de pasajeros puede representar una proporción distinta cuando el nivel general de demanda cambia.
+
+\emph{Nota técnica: las franjas del gráfico no forman parte del modelo; únicamente ayudan a contextualizar los cambios operativos que afectan a la interpretación de la serie.}
+
+\subsection{¿Qué día tiene menor demanda?}\label{quuxe9-duxeda-tiene-menor-demanda}
+
+Una forma sencilla de comparar los días de la semana es calcular la \textbf{afluencia promedio para cada día} durante el período de operación plena. Esto permite responder directamente qué días concentran mayor o menor demanda.
 
 \begin{figure}
 
@@ -187,16 +235,20 @@ La figura \ref{fig:grafico-historia} resume cinco años de la Línea 12. El quie
 
 }
 
-\caption{Distribución de la afluencia diaria por día de la semana en el período de operación plena (2024--2025).}\label{fig:grafico-semanal}
+\caption{Afluencia promedio por día de la semana durante la operación plena (2024--2025).}\label{fig:grafico-semanal}
 \end{figure}
 
-La figura \ref{fig:grafico-semanal} responde directamente la pregunta del mantenimiento: \textbf{el domingo es el día de menor demanda de manera consistente y predecible}, con una mediana cercana a los 130,000 pasajeros ---menos de la mitad que un viernes. El sábado ocupa un nivel intermedio (\textasciitilde200,000). Esta brecha, que se repite semana a semana, representa la ventana natural para programar intervenciones.
+\textbf{El domingo destaca como la principal ventana de menor demanda.} En promedio, la afluencia dominical es considerablemente menor que la observada en los días de mayor movimiento. El patrón semanal se repite a lo largo del período analizado, por lo que el domingo aparece como una alternativa natural para concentrar trabajos que reduzcan temporalmente la capacidad del servicio.
 
-Para ilustrarlo concretamente: una reducción de capacidad del 30\% en domingo equivale a afectar a aproximadamente 40,000 personas; el mismo recorte aplicado en un viernes impacta a más de 85,000. La diferencia no es menor.
+La utilidad para operaciones es sencilla: \textbf{si una intervención es inevitable, realizarla en un día de menor demanda potencialmente reduce el número de usuarios expuestos a la afectación}.
+
+\emph{Nota técnica: el gráfico resume la serie mediante el promedio de afluencia para cada día de la semana. El análisis posterior permite estudiar este patrón semanal de manera conjunta con la tendencia de la serie.}
 
 \section{Hallazgos de la descomposición de la serie}\label{hallazgos-de-la-descomposiciuxf3n-de-la-serie}
 
-El análisis se realiza sobre la serie de operación plena (15 enero 2024 -- 31 diciembre 2025, \(n = 717\) observaciones). La descomposición STL (\emph{Seasonal and Trend decomposition using Loess}) separa la serie en tres componentes: tendencia, estacionalidad semanal y residuos.
+\subsection{Separar lo que crece, lo que se repite y lo que cambia sin patrón claro}\label{separar-lo-que-crece-lo-que-se-repite-y-lo-que-cambia-sin-patruxf3n-claro}
+
+Para interpretar la afluencia diaria, conviene separar tres tipos de comportamiento: lo que cambia de manera gradual con el tiempo, lo que se repite cada semana y las variaciones que no siguen un patrón evidente.
 
 \begin{figure}
 
@@ -204,50 +256,60 @@ El análisis se realiza sobre la serie de operación plena (15 enero 2024 -- 31 
 
 }
 
-\caption{Descomposición STL de la afluencia diaria en el período de operación plena.}\label{fig:descomposicion}
+\caption{Descomposición clásica de la afluencia diaria durante la operación plena.}\label{fig:descomposicion}
 \end{figure}
 
-Cada componente cuenta una historia distinta:
+\textbf{Lo que crece con el tiempo.} La demanda aumenta durante el período de operación plena. Esto significa que la línea no está operando siempre al mismo nivel: con el paso del tiempo se incorporan más pasajeros al sistema.
 
-\textbf{Tendencia:} la afluencia ha crecido de manera sostenida, pasando de \textasciitilde250,000 pasajeros/día en enero de 2024 a más de 350,000 al cierre de 2025 ---un incremento cercano al 40\% en dos años. Este ritmo implica un desgaste acelerado de los activos físicos de la línea: rodamientos, rieles, equipos de tracción y señalización. El mantenimiento no es un lujo, sino una necesidad que se vuelve más urgente cada mes.
+\textbf{Lo que se repite cada semana.} El patrón semanal es estable y muestra claramente que los días de mayor demanda se concentran en la segunda mitad de la semana, mientras que el domingo presenta el nivel más bajo. Para la planeación operativa, este patrón repetitivo es especialmente valioso porque permite distinguir una baja esperable de una baja extraordinaria.
 
-\textbf{Estacionalidad semanal:} el componente estacional confirma que el ciclo de siete días es robusto y no cambia su forma ni amplitud en el tiempo. La depresión del domingo representa aproximadamente \(-120{,}000\) pasajeros respecto a la media semanal, mientras que los jueves y viernes concentran el pico positivo. Este patrón es predecible con un horizonte arbitrariamente largo, lo que permite planificar el mantenimiento con meses de anticipación.
+\textbf{Variaciones sin patrón claro.} Después de separar el crecimiento de la demanda y el ciclo semanal, las variaciones restantes representan movimientos que no siguen un patrón regular. Algunos días pueden alejarse del comportamiento esperado por vacaciones, días festivos, eventos u otras circunstancias específicas.
 
-\textbf{Residuos:} los residuos no muestran estructura sistemática relevante, lo que indica que la descomposición captura bien la variabilidad de la serie. Los valores atípicos visibles corresponden a días festivos ---Semana Santa, vacaciones de verano, Navidad--- que también representan ventanas adicionales de baja demanda fuera del ciclo semanal habitual.
+\emph{Nota técnica: esta separación se obtuvo mediante la función \texttt{decompose()} con una frecuencia de 7 y un modelo aditivo. El procedimiento separa la serie en tendencia, componente estacional semanal y variación residual.}
 
-\section{Hallazgos de transformaciones aplicadas a la serie}\label{hallazgos-de-transformaciones-aplicadas-a-la-serie}
+\section{Hallazgos de las transformaciones aplicadas a la serie}\label{hallazgos-de-las-transformaciones-aplicadas-a-la-serie}
 
-\subsection{Transformación logarítmica: estabilizar la varianza}\label{transformaciuxf3n-logaruxedtmica-estabilizar-la-varianza}
+Las transformaciones no cambian la información original; \textbf{cambian la forma en que la observamos} para que sea más fácil estudiar ciertos aspectos de la serie.
 
-La serie original presenta \textbf{varianza creciente}: conforme aumenta la afluencia promedio, también crece la diferencia absoluta entre domingos y días laborables. Este comportamiento dificulta el ajuste de modelos estadísticos que asumen varianza constante.
+\subsection{Poner los cambios en una escala comparable}\label{poner-los-cambios-en-una-escala-comparable}
 
-\begin{figure}
+Conforme aumenta la afluencia, también aumenta el tamaño de las diferencias absolutas entre días. Esto puede dificultar la comparación: un cambio de 30 mil pasajeros no tiene el mismo significado cuando la línea transporta 100 mil personas que cuando transporta 350 mil.
 
-{\centering \includegraphics{Tarea_Practica_1_files/figure-latex/grafico-log-1} 
+Por eso aplicamos una transformación logarítmica. En lugar de mirar únicamente cuántos pasajeros cambian, esta escala ayuda a interpretar los cambios \textbf{en relación con el nivel de afluencia}.
 
-}
+\subsection{Tres formas de mirar los cambios}\label{tres-formas-de-mirar-los-cambios}
 
-\caption{Serie original (arriba) y su transformación logarítmica (abajo). La transformación estabiliza la amplitud del ciclo semanal.}\label{fig:grafico-log}
-\end{figure}
+Para cada transformación podemos hacernos una pregunta distinta. No es necesario mostrar una gráfica adicional para entender su utilidad.
 
-En la figura \ref{fig:grafico-log}, el panel superior muestra cómo las oscilaciones semanales se amplían con el tiempo. En el panel inferior, la transformación logarítmica convierte esas diferencias absolutas en diferencias porcentuales, haciendo que la amplitud del ciclo semanal sea aproximadamente constante a lo largo del período. En términos del problema de mantenimiento, esto confirma que el domingo es proporcionalmente el mismo ``respiro'' de demanda independientemente del nivel absoluto de afluencia.
+\textbf{1. ¿Los cambios son comparables aunque la demanda aumente?}\\
+La \textbf{escala logarítmica} permite observar las variaciones de manera proporcional al nivel de pasajeros. Esto ayuda a comparar períodos en los que la línea tiene niveles de demanda diferentes.
 
-\subsection{Diferenciación: eliminar tendencia y estacionalidad}\label{diferenciaciuxf3n-eliminar-tendencia-y-estacionalidad}
+\textbf{2. ¿Cuánto cambió la afluencia respecto al día anterior?}\\
+La \textbf{diferencia de 1 día} compara cada observación con la del día inmediatamente anterior. Es útil para detectar aumentos o disminuciones repentinas, aunque todavía conserva el efecto normal del calendario semanal.
 
-\begin{figure}
+\textbf{3. ¿Cambió la afluencia respecto al mismo día de la semana anterior?}\\
+La \textbf{diferencia de 7 días} compara, por ejemplo, un lunes con el lunes anterior y un domingo con el domingo anterior. Esta referencia permite identificar cambios que se apartan del comportamiento semanal habitual.
 
-{\centering \includegraphics{Tarea_Practica_1_files/figure-latex/grafico-diff-1} 
+\subsubsection{¿Qué aportan al análisis?}\label{quuxe9-aportan-al-anuxe1lisis}
 
-}
+En conjunto, estas transformaciones nos permiten mirar la misma información desde tres perspectivas: \textbf{comparar cambios proporcionales, detectar movimientos diarios y distinguir cambios inusuales de los que son parte del ciclo semanal}. Esto facilita la preparación de la serie para etapas posteriores de análisis y pronóstico.
 
-\caption{Diferencia de orden 1 (arriba) y diferencia estacional de lag 7 (abajo).}\label{fig:grafico-diff}
-\end{figure}
+\emph{Nota técnica: la primera transformación corresponde a \(\log(y_t)\). La segunda corresponde a la primera diferencia, \(y_t-y_{t-1}\), y la tercera a la diferencia estacional de periodo 7, \(y_t-y_{t-7}\). Estas operaciones son habituales como preparación para modelos de series de tiempo porque ayudan a separar el comportamiento sistemático de los cambios restantes.}
 
-\begin{itemize}
-\item
-  \textbf{Diferencia de orden 1} (panel superior de la figura \ref{fig:grafico-diff}): al restar el valor del día anterior se elimina la tendencia creciente y la serie oscila alrededor de cero. Sin embargo, el patrón semanal persiste y es claramente visible: los saltos de domingo a lunes y de viernes a sábado aparecen como picos y valles regulares.
-\item
-  \textbf{Diferencia estacional (lag 7)} (panel inferior): al restar la observación de hace exactamente siete días ---el mismo día de la semana anterior--- se eliminan simultáneamente la tendencia y la estacionalidad semanal. La serie resultante fluctúa sin estructura aparente alrededor de cero. Esto indica que \textbf{una sola diferencia de lag 7 es suficiente para estacionarizar la serie}, un resultado favorable para el ajuste de modelos de pronóstico futuros, como un SARIMA, que permitirían estimar la afluencia esperada en cualquier día con semanas o meses de anticipación.
-\end{itemize}
+\section{Conclusiones}\label{conclusiones}
+
+El análisis permite llegar a cuatro conclusiones principales.
+
+\textbf{1. La demanda cambia con el tiempo.} La operación plena de 2024--2025 presenta una evolución ascendente de la afluencia. Por ello, no es suficiente describir un nivel promedio: también importa considerar cómo cambia ese nivel a lo largo del tiempo.
+
+\textbf{2. Existe un patrón semanal claro.} Los días de la semana no tienen la misma demanda. El domingo presenta la menor afluencia promedio y, en el extremo opuesto, los días de mayor actividad concentran una cantidad considerablemente mayor de pasajeros.
+
+\textbf{3. El patrón semanal es útil para la planeación.} Debido a que las diferencias entre los días se repiten de forma consistente, el calendario semanal ofrece una señal sencilla para identificar posibles ventanas de menor demanda. Esto puede complementar la decisión operativa sobre cuándo realizar intervenciones de mantenimiento.
+
+\textbf{4. Las transformaciones facilitan el análisis estadístico.} La escala logarítmica permite estudiar los cambios de forma proporcional, mientras que la diferenciación ayuda a retirar patrones persistentes para concentrarse en los cambios que no son explicados por el comportamiento habitual. Estas herramientas dejan la serie en una forma más apropiada para etapas posteriores de modelación y pronóstico.
+
+En términos prácticos, \textbf{el resultado más útil para la pregunta inicial es que el domingo aparece como una ventana recurrente de menor demanda}. No significa que toda intervención deba realizarse necesariamente ese día, pero sí que el comportamiento histórico de la serie proporciona evidencia para considerarlo dentro de la planeación, junto con otras restricciones operativas que no están incluidas en este análisis.
+
+\emph{Nota técnica final: los resultados corresponden al período de operación plena definido en este informe. La etapa de modelación y pronóstico queda fuera del alcance de esta práctica, pero las transformaciones y hallazgos obtenidos constituyen una base para un modelo de series de tiempo posterior.}
 
 \end{document}
