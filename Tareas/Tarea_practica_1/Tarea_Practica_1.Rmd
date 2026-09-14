@@ -28,10 +28,10 @@ rm(list = ls(all.names = TRUE))
 gc()
 
 knitr::opts_chunk$set(
-  eval    = FALSE,
-  echo    = FALSE,
-  message = FALSE,
-  warning = FALSE,
+  eval      = TRUE,
+  echo      = FALSE,
+  message   = FALSE,
+  warning   = FALSE,
   fig.align = "center",
   fig.width = 7,
   fig.height = 4
@@ -41,13 +41,53 @@ setwd("~/F_Ciencias/2027-1/Series_de_tiempo/Tareas/Tarea_practica_1")
 
 ```{r paquetes, include=FALSE}
 library(tidyverse)
+library(lubridate)
 library(tsibble)
 library(feasts)
-library(forecast)
 library(scales)
+library(patchwork)
 library(knitr)
 library(kableExtra)
 ```
+
+```{r funcion tabla}
+tabla <- function(DataFrame){
+  
+  n <- ncol(DataFrame)
+  m <- nrow(DataFrame)
+  
+  c <- paste(rep("c", n), collapse = "")
+  
+  kbl(DataFrame, booktabs = FALSE, escape = FALSE,
+      format = "latex", longtable = TRUE, align = c) %>%
+    kable_styling(latex_options = c("hold_position"),
+                  position = "center", font_size = 10) %>%
+    column_spec(1, border_left = TRUE, border_right = FALSE) %>%
+    column_spec(2:(n-1), border_left = FALSE, border_right = FALSE) %>%
+    column_spec(n, border_left = FALSE, border_right = TRUE) %>%
+    row_spec(0, background = "#99D8C9", bold = TRUE) %>%
+    row_spec(1:m, background = "#DEEBF7")
+}
+
+tabla2 <- function(DataFrame){
+  
+  n <- ncol(DataFrame)
+  m <- nrow(DataFrame)
+  
+  c <- paste(rep("c", n), collapse = "")
+  
+  kbl(DataFrame, booktabs = FALSE, escape = FALSE,
+      format = "latex", longtable = TRUE, align = c) %>%
+    kable_styling(latex_options = c("hold_position"),
+                  position = "center", font_size = 10) %>%
+    column_spec(1, border_left = TRUE, border_right = FALSE) %>%
+    #column_spec(2:(n-1), border_left = FALSE, border_right = FALSE) %>%
+    column_spec(n, border_left = FALSE, border_right = TRUE) %>%
+    row_spec(0, background = "#99D8C9", bold = TRUE) %>%
+    row_spec(1:m, background = "#DEEBF7")
+}
+```
+
 
 \begin{comment}
 \tableofcontents{}
@@ -56,11 +96,34 @@ library(kableExtra)
 
 # Introducción
 
-## Descripción de los datos
+## El problema
 
-Los datos utilizados en este análisis corresponden al registro de la **afluencia diaria del Sistema de Transporte Colectivo (STC) Metro de la Ciudad de México**, publicados como datos abiertos por el gobierno de la CDMX. El conjunto de datos comprende el período del **1 de enero de 2021 al 31 de julio de 2026**, con registros a nivel de estación, línea y tipo de pago (boleto, prepago y gratuidad).
+La **Línea 12** del Sistema de Transporte Colectivo (STC) Metro de la Ciudad de México conecta Mixcoac con Tláhuac a lo largo de 24.5 km y 20 estaciones. Con más de 300,000 pasajeros en un día laboral típico, es una de las rutas más importantes para la movilidad en la zona oriente--suroriente de la ciudad.
 
-Dado que el an'alis que realizaremos se limita a la \texttt{L'inea 12} del metro
+Mantener la infraestructura en condiciones óptimas sin interrumpir el servicio es un desafío constante. Las intervenciones de mantenimiento inevitablemente reducen la capacidad operativa de la línea, y eso tiene un costo directo para quienes dependen de ella.
+
+La pregunta que orienta este análisis es práctica: **¿cuándo tiene la línea menos pasajeros de manera predecible?** Si la demanda sigue patrones estables ---días de la semana, épocas del año--- es posible programar el mantenimiento en esas ventanas para minimizar el impacto sobre los usuarios.
+
+## Los datos
+
+Los datos provienen del registro de **afluencia diaria por estación** publicados como datos abiertos por el Gobierno de la CDMX. Se analizan los registros de la Línea 12 entre el **1 de enero de 2021 y el 31 de diciembre de 2025** (1,826 días, 20 estaciones).
+
+El período no puede analizarse como una sola serie continua. El **3 de mayo de 2021**, el colapso de un tramo elevado entre las estaciones Olivos y Tezonco dejó la línea completamente fuera de operación durante 621 días. La reapertura fue gradual y escalonada:
+
+
+
+```{r tabla de estaciones en servicio}
+fecha <- c("15 ene 2023", "16 jul 2023", "10--18 ene 2024")
+estaciones <- c("9 de 20", "14 de 20", "20 de 20")
+
+servicio <- data.frame(Fecha = fecha, "Estaciones en servicio" = estaciones)
+
+tabla2(servicio)
+
+```
+
+
+El análisis de serie de tiempo se enfoca, por tanto, en el período de **operación plena** (15 enero 2024 -- 31 diciembre 2025, 717 días), la única etapa que refleja el comportamiento real de la línea completa.
 
 ```{r carga-datos}
 datos_raw <- read_csv(
@@ -70,19 +133,211 @@ datos_raw <- read_csv(
 )
 ```
 
-```{r limpieza}
-datos <- datos_raw %>% 
-  group_by(fecha) %>% 
-  summarise(afluencia = sum(afluencia))
+```{r preparacion}
+dias_es <- c("Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb")
+
+datos_diario <- datos_raw |>
+  group_by(fecha) |>
+  summarise(afluencia = sum(afluencia), .groups = "drop") |>
+  mutate(
+    etapa = case_when(
+      fecha < "2021-05-04"  ~ "Pre-accidente",
+      fecha < "2023-01-15"  ~ "Cierre",
+      fecha < "2023-07-16"  ~ "Reapertura (9 est.)",
+      fecha < "2024-01-10"  ~ "Reapertura (14 est.)",
+      TRUE                  ~ "Operación plena"
+    ),
+    etapa = factor(etapa, levels = c(
+      "Pre-accidente", "Cierre",
+      "Reapertura (9 est.)", "Reapertura (14 est.)", "Operación plena"
+    ))
+  )
+
+datos_pleno <- datos_diario |>
+  filter(fecha >= "2024-01-15") |>
+  mutate(
+    num_dia    = wday(fecha),
+    dia_semana = factor(dias_es[num_dia], levels = dias_es),
+    tipo_dia   = if_else(num_dia %in% c(1, 7), "Fin de semana", "Entre semana")
+  )
+
+serie_ts <- datos_pleno |>
+  select(fecha, afluencia) |>
+  as_tsibble(index = fecha)
 ```
 
-```{r serie de tiempo}
-serie <- ts(datos$afluencia, start = c(2027, 1, 1), frequency = 365)
+# Gráfico de los datos con interpretación
+
+## La trayectoria de la Línea 12, 2021--2025
+
+```{r grafico-historia, fig.cap="Afluencia diaria de la Línea 12 (2021--2025). Las franjas delimitan cada etapa operativa de la línea.", fig.height=3.5}
+colores_etapa <- c(
+  "Pre-accidente"        = "#2E7D32",
+  "Cierre"               = "#B71C1C",
+  "Reapertura (9 est.)"  = "#F57C00",
+  "Reapertura (14 est.)" = "#F9A825",
+  "Operación plena"      = "#1565C0"
+)
+
+franjas <- tibble(
+  inicio = as.Date(c("2021-01-01", "2021-05-04", "2023-01-15", "2023-07-16", "2024-01-10")),
+  fin    = as.Date(c("2021-05-03", "2023-01-14", "2023-07-15", "2024-01-09", "2025-12-31")),
+  etapa  = factor(
+    c("Pre-accidente", "Cierre", "Reapertura (9 est.)",
+      "Reapertura (14 est.)", "Operación plena"),
+    levels = names(colores_etapa)
+  )
+)
+
+ggplot(datos_diario, aes(x = fecha, y = afluencia)) +
+  geom_rect(
+    data = franjas,
+    aes(xmin = inicio, xmax = fin, ymin = -Inf, ymax = Inf, fill = etapa),
+    alpha = 0.15, inherit.aes = FALSE
+  ) +
+  geom_line(color = "grey25", linewidth = 0.3) +
+  scale_fill_manual(values = colores_etapa, name = NULL) +
+  scale_y_continuous(labels = label_number(suffix = "k", scale = 1e-3)) +
+  scale_x_date(date_breaks = "6 months", date_labels = "%b %Y") +
+  labs(x = NULL, y = "Pasajeros / día") +
+  theme_minimal(base_size = 10) +
+  theme(
+    legend.position = "bottom",
+    legend.key.size = unit(0.4, "cm"),
+    axis.text.x     = element_text(angle = 30, hjust = 1)
+  )
 ```
 
+La figura \@ref(fig:grafico-historia) resume cinco años de la Línea 12. El quiebre del 3 de mayo de 2021 es inconfundible: 621 días sin un solo pasajero. Lo más relevante para este análisis es lo que ocurre después de la reapertura completa en enero de 2024: la afluencia no sólo se recuperó, sino que supera los niveles previos al accidente y muestra una tendencia de crecimiento sostenido. Eso significa que la infraestructura opera bajo una carga creciente, lo que hace del mantenimiento preventivo una necesidad cada vez más urgente.
 
+## El ciclo semanal: la ventana de oportunidad
 
+```{r grafico-semanal, fig.cap="Distribución de la afluencia diaria por día de la semana en el período de operación plena (2024--2025).", fig.height=3.5}
+datos_pleno |>
+  ggplot(aes(x = dia_semana, y = afluencia)) +
+  geom_boxplot(
+    aes(fill = tipo_dia),
+    alpha = 0.55, outlier.size = 0.7, width = 0.6
+  ) +
+  scale_fill_manual(
+    values = c("Entre semana" = "#1565C0", "Fin de semana" = "#E65100"),
+    name   = NULL
+  ) +
+  scale_y_continuous(labels = label_number(suffix = "k", scale = 1e-3)) +
+  labs(x = NULL, y = "Pasajeros / día") +
+  theme_minimal(base_size = 10) +
+  theme(legend.position = "top")
+```
 
+La figura \@ref(fig:grafico-semanal) responde directamente la pregunta del mantenimiento: **el domingo es el día de menor demanda de manera consistente y predecible**, con una mediana cercana a los 130,000 pasajeros ---menos de la mitad que un viernes. El sábado ocupa un nivel intermedio (~200,000). Esta brecha, que se repite semana a semana, representa la ventana natural para programar intervenciones.
 
+Para ilustrarlo concretamente: una reducción de capacidad del 30\% en domingo equivale a afectar a aproximadamente 40,000 personas; el mismo recorte aplicado en un viernes impacta a más de 85,000. La diferencia no es menor.
 
+# Hallazgos de la descomposición de la serie
 
+El análisis se realiza sobre la serie de operación plena (15 enero 2024 -- 31 diciembre 2025, $n = 717$ observaciones). La descomposición STL (*Seasonal and Trend decomposition using Loess*) separa la serie en tres componentes: tendencia, estacionalidad semanal y residuos.
+
+```{r descomposicion, fig.cap="Descomposición STL de la afluencia diaria en el período de operación plena.", fig.height=5.5}
+componentes <- serie_ts |>
+  model(STL(afluencia ~ season(period = 7))) |>
+  components() |>
+  as_tibble()
+
+# Identificar el nombre de la columna estacional (season_7 o season_week)
+col_est <- names(componentes)[
+  grepl("^season_", names(componentes)) & !grepl("adjust", names(componentes))
+][1]
+
+componentes |>
+  select(fecha, afluencia, trend, all_of(col_est), remainder) |>
+  pivot_longer(-fecha, names_to = "comp", values_to = "valor") |>
+  mutate(
+    comp = case_when(
+      comp == "afluencia" ~ "Serie observada",
+      comp == "trend"     ~ "Tendencia",
+      comp == "remainder" ~ "Residuos",
+      TRUE                ~ "Estacionalidad semanal"
+    ),
+    comp = factor(comp, levels = c(
+      "Serie observada", "Tendencia", "Estacionalidad semanal", "Residuos"
+    ))
+  ) |>
+  ggplot(aes(x = fecha, y = valor)) +
+  geom_line(linewidth = 0.3, color = "grey25") +
+  facet_wrap(~comp, ncol = 1, scales = "free_y") +
+  scale_y_continuous(labels = label_number(suffix = "k", scale = 1e-3)) +
+  scale_x_date(date_labels = "%b %Y") +
+  labs(x = NULL, y = NULL) +
+  theme_minimal(base_size = 10) +
+  theme(strip.text = element_text(face = "bold", size = 9))
+```
+
+Cada componente cuenta una historia distinta:
+
+**Tendencia:** la afluencia ha crecido de manera sostenida, pasando de ~250,000 pasajeros/día en enero de 2024 a más de 350,000 al cierre de 2025 ---un incremento cercano al 40\% en dos años. Este ritmo implica un desgaste acelerado de los activos físicos de la línea: rodamientos, rieles, equipos de tracción y señalización. El mantenimiento no es un lujo, sino una necesidad que se vuelve más urgente cada mes.
+
+**Estacionalidad semanal:** el componente estacional confirma que el ciclo de siete días es robusto y no cambia su forma ni amplitud en el tiempo. La depresión del domingo representa aproximadamente $-120{,}000$ pasajeros respecto a la media semanal, mientras que los jueves y viernes concentran el pico positivo. Este patrón es predecible con un horizonte arbitrariamente largo, lo que permite planificar el mantenimiento con meses de anticipación.
+
+**Residuos:** los residuos no muestran estructura sistemática relevante, lo que indica que la descomposición captura bien la variabilidad de la serie. Los valores atípicos visibles corresponden a días festivos ---Semana Santa, vacaciones de verano, Navidad--- que también representan ventanas adicionales de baja demanda fuera del ciclo semanal habitual.
+
+# Hallazgos de transformaciones aplicadas a la serie
+
+```{r datos-transf}
+datos_transf <- datos_pleno |>
+  arrange(fecha) |>
+  select(fecha, afluencia) |>
+  mutate(
+    log_af = log(afluencia),
+    diff1  = c(NA_real_, diff(afluencia)),
+    diff7  = c(rep(NA_real_, 7), diff(afluencia, lag = 7))
+  )
+```
+
+## Transformación logarítmica: estabilizar la varianza
+
+La serie original presenta **varianza creciente**: conforme aumenta la afluencia promedio, también crece la diferencia absoluta entre domingos y días laborables. Este comportamiento dificulta el ajuste de modelos estadísticos que asumen varianza constante.
+
+```{r grafico-log, fig.cap="Serie original (arriba) y su transformación logarítmica (abajo). La transformación estabiliza la amplitud del ciclo semanal.", fig.height=5}
+p_orig <- ggplot(datos_transf, aes(x = fecha, y = afluencia)) +
+  geom_line(linewidth = 0.3, color = "grey30") +
+  scale_y_continuous(labels = label_number(suffix = "k", scale = 1e-3)) +
+  labs(x = NULL, y = "Pasajeros / día") +
+  theme_minimal(base_size = 10)
+
+p_log <- ggplot(datos_transf, aes(x = fecha, y = log_af)) +
+  geom_line(linewidth = 0.3, color = "#1565C0") +
+  labs(x = NULL, y = "log(Pasajeros / día)") +
+  theme_minimal(base_size = 10)
+
+p_orig / p_log
+```
+
+En la figura \@ref(fig:grafico-log), el panel superior muestra cómo las oscilaciones semanales se amplían con el tiempo. En el panel inferior, la transformación logarítmica convierte esas diferencias absolutas en diferencias porcentuales, haciendo que la amplitud del ciclo semanal sea aproximadamente constante a lo largo del período. En términos del problema de mantenimiento, esto confirma que el domingo es proporcionalmente el mismo "respiro" de demanda independientemente del nivel absoluto de afluencia.
+
+## Diferenciación: eliminar tendencia y estacionalidad
+
+```{r grafico-diff, fig.cap="Diferencia de orden 1 (arriba) y diferencia estacional de lag 7 (abajo).", fig.height=5}
+p_diff1 <- datos_transf |>
+  filter(!is.na(diff1)) |>
+  ggplot(aes(x = fecha, y = diff1)) +
+  geom_line(linewidth = 0.3, color = "grey35") +
+  geom_hline(yintercept = 0, color = "#C62828", linetype = "dashed", linewidth = 0.5) +
+  scale_y_continuous(labels = label_number(suffix = "k", scale = 1e-3)) +
+  labs(x = NULL, y = "Δ pasajeros (lag 1)") +
+  theme_minimal(base_size = 10)
+
+p_diff7 <- datos_transf |>
+  filter(!is.na(diff7)) |>
+  ggplot(aes(x = fecha, y = diff7)) +
+  geom_line(linewidth = 0.3, color = "#1565C0") +
+  geom_hline(yintercept = 0, color = "#C62828", linetype = "dashed", linewidth = 0.5) +
+  scale_y_continuous(labels = label_number(suffix = "k", scale = 1e-3)) +
+  labs(x = NULL, y = "Δ pasajeros (lag 7)") +
+  theme_minimal(base_size = 10)
+
+p_diff1 / p_diff7
+```
+
+- **Diferencia de orden 1** (panel superior de la figura \@ref(fig:grafico-diff)): al restar el valor del día anterior se elimina la tendencia creciente y la serie oscila alrededor de cero. Sin embargo, el patrón semanal persiste y es claramente visible: los saltos de domingo a lunes y de viernes a sábado aparecen como picos y valles regulares.
+
+- **Diferencia estacional (lag 7)** (panel inferior): al restar la observación de hace exactamente siete días ---el mismo día de la semana anterior--- se eliminan simultáneamente la tendencia y la estacionalidad semanal. La serie resultante fluctúa sin estructura aparente alrededor de cero. Esto indica que **una sola diferencia de lag 7 es suficiente para estacionarizar la serie**, un resultado favorable para el ajuste de modelos de pronóstico futuros, como un SARIMA, que permitirían estimar la afluencia esperada en cualquier día con semanas o meses de anticipación.
