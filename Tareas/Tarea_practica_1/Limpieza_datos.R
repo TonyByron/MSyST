@@ -31,6 +31,7 @@ datos_raw <- datos_raw %>%
     mes = as.character(mes),
     anio = as.integer(anio),
     linea = arreglar_codif(linea),
+    linea = gsub("Linea",   "Línea", linea),
     estacion = arreglar_codif(estacion),
     tipo_pago = arreglar_codif(tipo_pago),
     afluencia = as.numeric(afluencia)
@@ -42,6 +43,7 @@ L12 <- "Línea 12"
 
 datos <- datos_raw[datos_raw$linea == L12, c("fecha", "estacion", "tipo_pago", "afluencia")]
 
+datos <- datos[datos$fecha < "2026-01-01", ]
 
 # 5. almacenamiento en csv limpio ---------------------------------------------------------------------------------
 

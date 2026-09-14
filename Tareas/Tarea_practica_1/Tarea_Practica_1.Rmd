@@ -70,6 +70,18 @@ datos_raw <- read_csv(
 )
 ```
 
+```{r limpieza}
+datos <- datos_raw %>% 
+  group_by(fecha) %>% 
+  summarise(afluencia = sum(afluencia))
+```
+
+```{r serie de tiempo}
+serie <- ts(datos$afluencia, start = c(2027, 1, 1), frequency = 365)
+```
+
+
+
 
 
 
