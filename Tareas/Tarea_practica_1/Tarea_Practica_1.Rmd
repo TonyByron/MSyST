@@ -1,6 +1,5 @@
 ---
 title: \titulo
-author: \Tony
 date: "`r Sys.Date()`"
 output:
   bookdown::pdf_document2:
@@ -27,8 +26,8 @@ knitr::opts_chunk$set(
   message   = FALSE,
   warning   = FALSE,
   fig.align = "center",
-  fig.width = 7,
-  fig.height = 4
+  fig.width = 6,
+  fig.height = 3
 )
 ```
 
@@ -258,7 +257,7 @@ ggplot(resumen_semana, aes(x = dia_semana, y = promedio)) +
     vjust = -0.35,
     size = 3.3
   ) +
-  scale_fill_manual(values = c(`FALSE` = "#9E9E9E", `TRUE` = "#2E7D32")) +
+  scale_fill_manual(values = c(`FALSE` = "#DEEBF7", `TRUE` = "#99D8C9")) +
   scale_y_continuous(
     labels = label_number(suffix = " mil", scale = 1e-3),
     expand = expansion(mult = c(0, 0.12))

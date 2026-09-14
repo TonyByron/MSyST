@@ -1,20 +1,165 @@
-%\usepackage{luatex85}
+% ============================================================
+% Preambulo moderno para Tarea Práctica 1
+% Basado en la plantilla original del autor.
+% Se conservan las interfaces: \materia, \TituloTarea, \Tony y \titulo.
+% ============================================================
+
+% Asegura que los .sty locales se encuentren dentro de la carpeta plantilla/
+\makeatletter
+%\def\input@path{{plantilla/}}
+\makeatother
+
 \usepackage{varios}
 \graphicspath{{plantilla/}}
 
+% Matemáticas modernas para XeLaTeX
 \usepackage{unicode-math}
 \setmathfont{TeX Gyre Termes Math}
 
-
-\spanishdecimal{.}
+%\spanishdecimal{.}
 
 \renewcommand{\labelitemi}{$\bullet$}
 \renewcommand{\labelitemii}{$\circ$}
 
-\newcommand{\materia}{Modelos de Supervivecia y Series de Tiempo}
-\newcommand{\TituloTarea}{Tarea Practica 1}
-%\pagecolor{verde2}
+% ============================================================
+% Identidad del documento: conservar estos comandos
+% ============================================================
+\newcommand{\materia}{Modelos de Supervivencia y Series de Tiempo}
+\newcommand{\TituloTarea}{Tarea Práctica 1}
+\newcommand{\Tony}{\textsc{Anthonie Byron Ornelas Clement}}
 
-\title{\titulo}
-\author{\Tony}
-\date{}
+% Autores
+\newcommand{\Autores}{
+    \textsc{Aguirre Garcia Abraham Isaias}\\
+    \textsc{Larios Huitron Michelle}\\
+    \textsc{Ornelas Clement Anthonie Byron}\\
+    \textsc{Ernesto} % Falta nombre completo
+}
+
+% ============================================================
+% Portada
+% ============================================================
+
+
+
+\newcommand{\titulo}{%
+  \begin{minipage}{0.93\textwidth}
+    \vspace{0.6cm}
+    \begin{center}
+      \IfFileExists{escudo.png}{%
+        \includegraphics[height=2.7cm]{escudo.png}\par\vspace{0.55cm}
+      }{%
+        \IfFileExists{escudo0.png}{%
+          \includegraphics[height=2.7cm]{escudo0.png}\par\vspace{0.55cm}
+        }{}
+      }
+      {\sffamily\small\bfseries FACULTAD DE CIENCIAS\par}
+      \vspace{0.12cm}
+      {\sffamily\footnotesize\color{UNAMMuted}\materia\par}
+      \vspace{0.75cm}
+      \colorbox{UNAMBlue}{\parbox{0.82\textwidth}{%
+        \centering
+        \vspace{0.22cm}
+        {\sffamily\color{white}\bfseries\fontsize{24}{29}\selectfont \TituloTarea\par}
+        \vspace{0.22cm}
+      }}
+      \vspace{0.45cm}
+      {\sffamily\normalsize\color{UNAMText}Análisis de la afluencia de pasajeros de la Línea 12 del Metro de la Ciudad de México\par}
+      \vspace{0.85cm}
+      {\sffamily\small\color{UNAMMuted}Período de análisis: operación plena, 2024--2025\par}
+      \vfill
+      %{\sffamily\small\bfseries \Tony\par}
+      {\large \Autores \par}
+      \vspace{0.15cm}
+    \end{center}
+  \end{minipage}%
+}
+
+% ============================================================
+% Ajustes visuales generales
+% ============================================================
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+
+% Hyperref lo administra Pandoc/R Markdown. Solo configuramos al inicio.
+\makeatletter
+\AtBeginDocument{%
+  \@ifpackageloaded{hyperref}{%
+    \hypersetup{
+      colorlinks=true,
+      linkcolor=UNAMBlue,
+      urlcolor=UNAMBlue,
+      citecolor=UNAMBlue
+    }
+  }{}
+}
+\makeatother
+
+% Títulos
+\usepackage{titlesec}
+\titleformat{\section}
+  {\sffamily\Large\bfseries\color{UNAMBlue}}
+  {\thesection}{0.65em}{}
+  [\vspace{0.18em}\color{UNAMAccent}\titlerule]
+
+\titleformat{\subsection}
+  {\sffamily\large\bfseries\color{UNAMText}}
+  {\thesubsection}{0.6em}{}
+
+\titleformat{\subsubsection}
+  {\sffamily\normalsize\bfseries\color{UNAMBlue}}
+  {\thesubsubsection}{0.55em}{}
+
+% Figuras
+\captionsetup{
+  font=small,
+  labelfont={bf,color=UNAMBlue},
+  textfont={color=UNAMMuted},
+  justification=centering,
+  skip=7pt
+}
+
+% ============================================================
+% Entornos de comunicación para el Rmd
+% ============================================================
+\newtcolorbox{queobservar}{%
+  enhanced,
+  breakable,
+  colback=UNAMLightBlue,
+  colframe=UNAMBlue,
+  boxrule=0pt,
+  leftrule=3pt,
+  arc=2pt,
+  left=8pt,right=8pt,top=7pt,bottom=7pt,
+  before skip=8pt,after skip=10pt,
+  fonttitle=\sffamily\bfseries,
+  title=¿Qué debemos observar?%
+}
+
+\newtcolorbox{notatecnica}{%
+  enhanced,
+  breakable,
+  colback=UNAMLightGray,
+  colframe=UNAMMuted,
+  boxrule=0pt,
+  leftrule=3pt,
+  arc=2pt,
+  left=8pt,right=8pt,top=7pt,bottom=7pt,
+  before skip=8pt,after skip=10pt,
+  fonttitle=\sffamily\bfseries,
+  title=Nota técnica%
+}
+
+\newtcolorbox{hallazgo}{%
+  enhanced,
+  breakable,
+  colback=UNAMLightAccent,
+  colframe=UNAMAccent,
+  boxrule=0pt,
+  leftrule=4pt,
+  arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=8pt,
+  before skip=9pt,after skip=11pt,
+  fonttitle=\sffamily\bfseries,
+  title=Hallazgo principal%
+}

@@ -1,5 +1,9 @@
+% ============================================================
+% Comandos auxiliares originales
+% ============================================================
 \usepackage{Tony}
 \usepackage{tony}
+
 \newcommand{\bola}[2]{B_{#1} \pars{#2}}
 \newcommand{\pac}[1]{{#1}^{\circ}}
 \newcommand{\ep}[1]{\e_{_#1}}
@@ -8,57 +12,44 @@
 \newcommand{\B}{\mathcal{B}}
 \newcommand{\tq}{\text{ tal que }}
 
-%=====================================================================
-
-\def\proof{\paragraph{\underline{\textbf{Demostraci\'on:}}\\\\}}
+\def\proof{\paragraph{\underline{\textbf{Demostración:}}\\\\}}
 \def\endproof{\cqd}
 
 \def\teo{\paragraph{\underline{\textbf{Teorema:}}}}
-%\def\teo{}
 
 \newcommand{\n}{n \to \infty}
 \newcommand{\nk}{k \to \infty}
-
 \newcommand{\lin}{\lim\limits_{\n}}
 \newcommand{\lik}{\lim\limits_{\nk}}
 \newcommand{\cl}[1]{\corch{#1}}
-
 \newcommand{\sun}[2]{\sum\limits_{n = {#1}}^{#2}}
-
 \newcommand{\ex}{\exists \;}
 \newcommand{\pt}{\forall \;}
 
-\newcommand{\fpart}[4]{
-    \left\{ 
-    \begin{array}{lcc} 
-        #1 & si & #2 \\\\ 
+\newcommand{\fpart}[4]{%
+    \left\{
+    \begin{array}{lcc}
+        #1 & si & #2 \\
         #3 & si & #4
-    \end{array} 
+    \end{array}
     \right.
-    }
+}
 
 \newcommand{\suc}[1]{\llave{{#1}_n}}
-
-\newcommand{\Def}{\underline{\textbf{Definici\'on}}}
+\newcommand{\Def}{\underline{\textbf{Definición}}}
 \newcommand{\pn}[1]{\phi_n\pars{#1}}
 
-\newcommand{\frxi}[2]{
-\dfrac{ {#1} - x_{ #2 } }{ x_{ #2 + 1 } - x_{ #2 } }
+\newcommand{\frxi}[2]{%
+\dfrac{{#1} - x_{#2}}{x_{#2 + 1} - x_{#2}}
 }
-
-\newcommand{\frxii}[2]{
-\dfrac{ x_{ #2 + 1 } - {#1} }{ x_{ #2 + 1 } - x_{ #2 } }
+\newcommand{\frxii}[2]{%
+\dfrac{x_{#2 + 1} - {#1}}{x_{#2 + 1} - x_{#2}}
 }
-
-\newcommand{\pnxi}[2]{
-\frxi{#1}{#2} f\pars{ x_{ #2 + 1 } }
-+ \frxii{#1}{#2} f\pars{ x_{ #2 } } }
-
+\newcommand{\pnxi}[2]{%
+\frxi{#1}{#2} f\pars{x_{#2 + 1}}
++ \frxii{#1}{#2} f\pars{x_{#2}}
+}
 \newcommand{\pmx}[1]{\phi_m\pars{#1}}
-
 \newcommand{\nor}[1]{\left\| {#1} \right\|}
 \newcommand{\nx}[2]{\left\| {#1} \right\|_{#2}}
-
-%-----------------------------------------------------------------------------------------------------------------------
-
 \newcommand{\Dom}[1]{Dom \corch{#1}}
