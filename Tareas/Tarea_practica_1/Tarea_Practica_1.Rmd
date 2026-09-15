@@ -360,7 +360,7 @@ componentes |>
 \begin{notatecnica}
 Esta separación se obtuvo mediante la función 
 \texttt{decompose()} con una frecuencia de 7 y un modelo aditivo. El procedimiento separa la serie en tendencia, componente estacional semanal y variación residual.
-\end{notatecnica
+\end{notatecnica}
 
 # Hallazgos de las transformaciones aplicadas a la serie
 

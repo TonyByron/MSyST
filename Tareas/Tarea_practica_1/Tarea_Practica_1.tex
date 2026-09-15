@@ -82,6 +82,20 @@
 
 \usepackage{varios}
 \graphicspath{{plantilla/}}
+\usepackage{varios}
+\graphicspath{{plantilla/}}
+% ------------------------------------------------------------------
+% Paleta Línea 12 (Línea Dorada) — sobrescribe los colores UNAM.
+% Todo lo que ya usa estos nombres (portada, secciones, cajas,
+% hipervínculos) hereda el dorado automáticamente.
+% ------------------------------------------------------------------
+\definecolor{UNAMBlue}{HTML}{B8901E}        % dorado principal
+\definecolor{UNAMAccent}{HTML}{8A6A16}      % dorado oscuro (contraste)
+\definecolor{UNAMLightBlue}{HTML}{F3E7C6}   % fondo claro dorado
+\definecolor{UNAMLightAccent}{HTML}{EAD6A0} % fondo claro dorado oscuro
+\definecolor{UNAMMuted}{HTML}{5B5B5B}       % gris neutro, sin cambio
+\definecolor{UNAMText}{HTML}{262626}        % texto principal
+\definecolor{UNAMLightGray}{HTML}{FBF9F4}   % blanco hueso
 
 % Matemáticas modernas para XeLaTeX
 \usepackage{unicode-math}
@@ -103,8 +117,7 @@
 \newcommand{\Autores}{
     \textsc{Aguirre Garcia Abraham Isaias}\\
     \textsc{Larios Huitron Michelle}\\
-    \textsc{Ornelas Clement Anthonie Byron}\\
-    \textsc{Ernesto} % Falta nombre completo
+    \textsc{Ornelas Clement Anthonie Byron}
 }
 
 % ============================================================
@@ -128,18 +141,21 @@
       \vspace{0.12cm}
       {\sffamily\footnotesize\color{UNAMMuted}\materia\par}
       \vspace{0.75cm}
-      \colorbox{UNAMBlue}{\parbox{0.82\textwidth}{%
+        \colorbox{UNAMBlue}{\parbox{0.82\textwidth}{%
         \centering
         \vspace{0.22cm}
         {\sffamily\color{white}\bfseries\fontsize{24}{29}\selectfont \TituloTarea\par}
         \vspace{0.22cm}
       }}
-      \vspace{0.45cm}
+      \par\vspace{0.3cm}
+      \textcolor{UNAMAccent}{\rule{4.5cm}{1pt}}\par
+      \vspace{0.5cm}
       {\sffamily\normalsize\color{UNAMText}Análisis de la afluencia de pasajeros de la Línea 12 del Metro de la Ciudad de México\par}
       \vspace{0.85cm}
       {\sffamily\small\color{UNAMMuted}Período de análisis: operación plena, 2024--2025\par}
       \vfill
       %{\sffamily\small\bfseries \Tony\par}
+      \vspace{0.85cm}
       {\large \Autores \par}
       \vspace{0.15cm}
     \end{center}
@@ -234,6 +250,20 @@
   fonttitle=\sffamily\bfseries,
   title=Hallazgo principal%
 }
+
+
+\newtcolorbox{citadestacada}{%
+  enhanced,
+  breakable,
+  colback=white,
+  colframe=UNAMBlue,
+  boxrule=0pt,
+  leftrule=2.4pt,
+  arc=0pt,
+  left=12pt,right=10pt,top=6pt,bottom=6pt,
+  before skip=8pt,after skip=10pt,
+  fontupper=\itshape\color{UNAMText}
+}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
@@ -277,9 +307,9 @@ El propósito de este análisis no es solamente describir cuántas personas util
 
 La pregunta principal es:
 
-\begin{quote}
-\textbf{¿En qué momentos la Línea 12 presenta una menor afluencia de manera suficientemente consistente como para considerarlos una posible ventana de mantenimiento?}
-\end{quote}
+\begin{citadestacada}
+¿En qué momentos la Línea 12 presenta una menor afluencia de manera suficientemente consistente como para considerarlos una posible ventana de mantenimiento?
+\end{citadestacada}
 
 \subsection{Los datos}\label{los-datos}
 
@@ -293,13 +323,13 @@ Sin embargo, no sería adecuado tratar todo el período como si la línea hubier
 
 \begin{longtable}[t]{|>{}c|>{}c|}
 \hline
-\cellcolor[HTML]{99D8C9}{\textbf{Fecha}} & \cellcolor[HTML]{99D8C9}{\textbf{Estaciones.en.servicio}}\\
+\cellcolor{UNAMBlue}{\textcolor{white}{\textbf{Fecha}}} & \cellcolor{UNAMBlue}{\textcolor{white}{\textbf{Estaciones.en.servicio}}}\\
 \hline
-\cellcolor[HTML]{DEEBF7}{15 ene 2023} & \cellcolor[HTML]{DEEBF7}{9 de 20}\\
+\cellcolor{UNAMLightBlue}{15 ene 2023} & \cellcolor{UNAMLightBlue}{9 de 20}\\
 \hline
-\cellcolor[HTML]{DEEBF7}{16 jul 2023} & \cellcolor[HTML]{DEEBF7}{14 de 20}\\
+\cellcolor{UNAMLightBlue}{16 jul 2023} & \cellcolor{UNAMLightBlue}{14 de 20}\\
 \hline
-\cellcolor[HTML]{DEEBF7}{23--29 ene 2024} & \cellcolor[HTML]{DEEBF7}{20 de 20}\\
+\cellcolor{UNAMLightBlue}{23--29 ene 2024} & \cellcolor{UNAMLightBlue}{20 de 20}\\
 \hline
 \end{longtable}
 \endgroup{}
@@ -349,7 +379,11 @@ En particular, se busca:
 
 El procedimiento se puede resumir en cuatro pasos. Primero, se agregan los registros por estación para obtener la afluencia total de cada día. Después se selecciona el período de operación plena para evitar mezclar situaciones operativas muy distintas. A continuación, se utilizan gráficos y una descomposición de la serie para distinguir los patrones principales. Finalmente, se aplican transformaciones que ayudan a comparar los cambios de la demanda a lo largo del tiempo.
 
-\emph{Nota técnica: el análisis de componentes se realiza mediante la descomposición clásica \texttt{decompose()} y las transformaciones incluyen una escala logarítmica, una diferencia de orden 1 y una diferencia estacional de periodo 7.}
+\begin{notatecnica}
+El análisis de componentes se realiza mediante la descomposición clásica
+\texttt{decompose()} y las transformaciones incluyen una escala logarítmica,
+una diferencia de orden 1 y una diferencia estacional de periodo 7.
+\end{notatecnica}
 
 \section{Comportamiento de la afluencia}\label{comportamiento-de-la-afluencia}
 
@@ -364,11 +398,15 @@ El procedimiento se puede resumir en cuatro pasos. Primero, se agregan los regis
 \caption{Afluencia diaria de la Línea 12 entre 2021 y 2025. Las franjas distinguen las principales etapas de operación.}\label{fig:grafico-historia}
 \end{figure}
 
-\textbf{¿Qué debemos observar?} La serie cambia de manera muy clara cuando cambia la situación operativa de la línea. Primero observamos la operación previa al accidente, después un cierre prolongado y finalmente una reapertura gradual hasta llegar a la operación con las 20 estaciones. Por esta razón, el análisis de patrones habituales se concentra en la etapa final.
+\begin{queobservar}
+La serie cambia de manera muy clara cuando cambia la situación operativa de la línea. Primero observamos la operación previa al accidente, después un cierre prolongado y finalmente una reapertura gradual hasta llegar a la operación con las 20 estaciones. Por esta razón, el análisis de patrones habituales se concentra en la etapa final.
+\end{queobservar}
 
 La figura también muestra que la afluencia durante 2024--2025 presenta una recuperación y una evolución ascendente. Para el problema planteado, esto es importante porque una misma diferencia absoluta de pasajeros puede representar una proporción distinta cuando el nivel general de demanda cambia.
 
-\emph{Nota técnica: las franjas del gráfico no forman parte del modelo; únicamente ayudan a contextualizar los cambios operativos que afectan a la interpretación de la serie.}
+\begin{notatecnica}
+Las franjas del gráfico no forman parte del modelo; únicamente ayudan a contextualizar los cambios operativos que afectan a la interpretación de la serie.
+\end{notatecnica}
 
 \subsection{¿Qué día tiene menor demanda?}\label{quuxe9-duxeda-tiene-menor-demanda}
 
@@ -383,11 +421,15 @@ Una forma sencilla de comparar los días de la semana es calcular la \textbf{afl
 \caption{Afluencia promedio por día de la semana durante la operación plena (2024--2025).}\label{fig:grafico-semanal}
 \end{figure}
 
-\textbf{El domingo destaca como la principal ventana de menor demanda.} En promedio, la afluencia dominical es considerablemente menor que la observada en los días de mayor movimiento. El patrón semanal se repite a lo largo del período analizado, por lo que el domingo aparece como una alternativa natural para concentrar trabajos que reduzcan temporalmente la capacidad del servicio.
+\begin{hallazgo}
+El domingo destaca como la principal ventana de menor demanda. En promedio, la afluencia dominical es considerablemente menor que la observada en los días de mayor movimiento. El patrón semanal se repite a lo largo del período analizado, por lo que el domingo aparece como una alternativa natural para concentrar trabajos que reduzcan temporalmente la capacidad del servicio.
+\end{hallazgo}
 
 La utilidad para operaciones es sencilla: \textbf{si una intervención es inevitable, realizarla en un día de menor demanda potencialmente reduce el número de usuarios expuestos a la afectación}.
 
-\emph{Nota técnica: el gráfico resume la serie mediante el promedio de afluencia para cada día de la semana. El análisis posterior permite estudiar este patrón semanal de manera conjunta con la tendencia de la serie.}
+\begin{notatecnica}
+El gráfico resume la serie mediante el promedio de afluencia para cada día de la semana. El análisis posterior permite estudiar este patrón semanal de manera conjunta con la tendencia de la serie.
+\end{notatecnica}
 
 \section{Hallazgos de la descomposición de la serie}\label{hallazgos-de-la-descomposiciuxf3n-de-la-serie}
 
@@ -410,7 +452,10 @@ Para interpretar la afluencia diaria, conviene separar tres tipos de comportamie
 
 \textbf{Variaciones sin patrón claro.} Después de separar el crecimiento de la demanda y el ciclo semanal, las variaciones restantes representan movimientos que no siguen un patrón regular. Algunos días pueden alejarse del comportamiento esperado por vacaciones, días festivos, eventos u otras circunstancias específicas.
 
-\emph{Nota técnica: esta separación se obtuvo mediante la función \texttt{decompose()} con una frecuencia de 7 y un modelo aditivo. El procedimiento separa la serie en tendencia, componente estacional semanal y variación residual.}
+\begin{notatecnica}
+Esta separación se obtuvo mediante la función 
+\texttt{decompose()} con una frecuencia de 7 y un modelo aditivo. El procedimiento separa la serie en tendencia, componente estacional semanal y variación residual.
+\end{notatecnica}
 
 \section{Hallazgos de las transformaciones aplicadas a la serie}\label{hallazgos-de-las-transformaciones-aplicadas-a-la-serie}
 
@@ -439,22 +484,28 @@ La \textbf{diferencia de 7 días} compara, por ejemplo, un lunes con el lunes an
 
 En conjunto, estas transformaciones nos permiten mirar la misma información desde tres perspectivas: \textbf{comparar cambios proporcionales, detectar movimientos diarios y distinguir cambios inusuales de los que son parte del ciclo semanal}. Esto facilita la preparación de la serie para etapas posteriores de análisis y pronóstico.
 
-\emph{Nota técnica: la primera transformación corresponde a \(\log(y_t)\). La segunda corresponde a la primera diferencia, \(y_t-y_{t-1}\), y la tercera a la diferencia estacional de periodo 7, \(y_t-y_{t-7}\). Estas operaciones son habituales como preparación para modelos de series de tiempo porque ayudan a separar el comportamiento sistemático de los cambios restantes.}
+\begin{notatecnica}
+La primera transformación corresponde a $\log(y_t)$. La segunda corresponde a la primera diferencia, $y_t-y_{t-1}$, y la tercera a la diferencia estacional de periodo 7, $y_t-y_{t-7}$. Estas operaciones son habituales como preparación para modelos de series de tiempo porque ayudan a separar el comportamiento sistemático de los cambios restantes.
+\end{notatecnica}
 
 \section{Conclusiones}\label{conclusiones}
 
+\begin{hallazgo}
 El análisis permite llegar a cuatro conclusiones principales.
 
-\textbf{1. La demanda cambia con el tiempo.} La operación plena de 2024--2025 presenta una evolución ascendente de la afluencia. Por ello, no es suficiente describir un nivel promedio: también importa considerar cómo cambia ese nivel a lo largo del tiempo.
+**1. La demanda cambia con el tiempo.** La operación plena de 2024--2025 presenta una evolución ascendente de la afluencia. Por ello, no es suficiente describir un nivel promedio: también importa considerar cómo cambia ese nivel a lo largo del tiempo.
 
-\textbf{2. Existe un patrón semanal claro.} Los días de la semana no tienen la misma demanda. El domingo presenta la menor afluencia promedio y, en el extremo opuesto, los días de mayor actividad concentran una cantidad considerablemente mayor de pasajeros.
+**2. Existe un patrón semanal claro.** Los días de la semana no tienen la misma demanda. El domingo presenta la menor afluencia promedio y, en el extremo opuesto, los días de mayor actividad concentran una cantidad considerablemente mayor de pasajeros.
 
-\textbf{3. El patrón semanal es útil para la planeación.} Debido a que las diferencias entre los días se repiten de forma consistente, el calendario semanal ofrece una señal sencilla para identificar posibles ventanas de menor demanda. Esto puede complementar la decisión operativa sobre cuándo realizar intervenciones de mantenimiento.
+**3. El patrón semanal es útil para la planeación.** Debido a que las diferencias entre los días se repiten de forma consistente, el calendario semanal ofrece una señal sencilla para identificar posibles ventanas de menor demanda. Esto puede complementar la decisión operativa sobre cuándo realizar intervenciones de mantenimiento.
 
-\textbf{4. Las transformaciones facilitan el análisis estadístico.} La escala logarítmica permite estudiar los cambios de forma proporcional, mientras que la diferenciación ayuda a retirar patrones persistentes para concentrarse en los cambios que no son explicados por el comportamiento habitual. Estas herramientas dejan la serie en una forma más apropiada para etapas posteriores de modelación y pronóstico.
+**4. Las transformaciones facilitan el análisis estadístico.** La escala logarítmica permite estudiar los cambios de forma proporcional, mientras que la diferenciación ayuda a retirar patrones persistentes para concentrarse en los cambios que no son explicados por el comportamiento habitual. Estas herramientas dejan la serie en una forma más apropiada para etapas posteriores de modelación y pronóstico.
+\end{hallazgo}
 
 En términos prácticos, \textbf{el resultado más útil para la pregunta inicial es que el domingo aparece como una ventana recurrente de menor demanda}. No significa que toda intervención deba realizarse necesariamente ese día, pero sí que el comportamiento histórico de la serie proporciona evidencia para considerarlo dentro de la planeación, junto con otras restricciones operativas que no están incluidas en este análisis.
 
-\emph{Nota técnica final: los resultados corresponden al período de operación plena definido en este informe. La etapa de modelación y pronóstico queda fuera del alcance de esta práctica, pero las transformaciones y hallazgos obtenidos constituyen una base para un modelo de series de tiempo posterior.}
+\begin{notatecnica}
+Los resultados corresponden al período de operación plena definido en este informe. La etapa de modelación y pronóstico queda fuera del alcance de esta práctica, pero las transformaciones y hallazgos obtenidos constituyen una base para un modelo de series de tiempo posterior.
+\end{notatecnica}
 
 \end{document}
