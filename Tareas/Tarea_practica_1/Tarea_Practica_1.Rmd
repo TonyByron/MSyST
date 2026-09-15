@@ -54,8 +54,8 @@ tabla <- function(DataFrame){
     column_spec(1, border_left = TRUE, border_right = FALSE) %>%
     column_spec(2:(n-1), border_left = FALSE, border_right = FALSE) %>%
     column_spec(n, border_left = FALSE, border_right = TRUE) %>%
-    row_spec(0, background = "#99D8C9", bold = TRUE) %>%
-    row_spec(1:m, background = "#DEEBF7")
+    row_spec(0, background = "UNAMBlue", color = "white", bold = TRUE) %>%
+    row_spec(1:m, background = "UNAMLightBlue")
 }
 
 tabla2 <- function(DataFrame){
@@ -69,8 +69,8 @@ tabla2 <- function(DataFrame){
                   position = "center", font_size = 10) %>%
     column_spec(1, border_left = TRUE, border_right = FALSE) %>%
     column_spec(n, border_left = FALSE, border_right = TRUE) %>%
-    row_spec(0, background = "#99D8C9", bold = TRUE) %>%
-    row_spec(1:m, background = "#DEEBF7")
+    row_spec(0, background = "UNAMBlue", color = "white", bold = TRUE) %>%
+    row_spec(1:m, background = "UNAMLightBlue")
 }
 ```
 
@@ -84,7 +84,9 @@ El propósito de este análisis no es solamente describir cuántas personas util
 
 La pregunta principal es:
 
-> **¿En qué momentos la Línea 12 presenta una menor afluencia de manera suficientemente consistente como para considerarlos una posible ventana de mantenimiento?**
+\begin{citadestacada}
+¿En qué momentos la Línea 12 presenta una menor afluencia de manera suficientemente consistente como para considerarlos una posible ventana de mantenimiento?
+\end{citadestacada}
 
 ## Los datos
 
@@ -137,7 +139,11 @@ En particular, se busca:
 
 El procedimiento se puede resumir en cuatro pasos. Primero, se agregan los registros por estación para obtener la afluencia total de cada día. Después se selecciona el período de operación plena para evitar mezclar situaciones operativas muy distintas. A continuación, se utilizan gráficos y una descomposición de la serie para distinguir los patrones principales. Finalmente, se aplican transformaciones que ayudan a comparar los cambios de la demanda a lo largo del tiempo.
 
-*Nota técnica: el análisis de componentes se realiza mediante la descomposición clásica `decompose()` y las transformaciones incluyen una escala logarítmica, una diferencia de orden 1 y una diferencia estacional de periodo 7.*
+\begin{notatecnica}
+El análisis de componentes se realiza mediante la descomposición clásica
+\texttt{decompose()} y las transformaciones incluyen una escala logarítmica,
+una diferencia de orden 1 y una diferencia estacional de periodo 7.
+\end{notatecnica}
 
 ```{r carga-datos}
 datos_raw <- read_csv(
@@ -224,11 +230,15 @@ ggplot(datos_diario, aes(x = fecha, y = afluencia)) +
   )
 ```
 
-**¿Qué debemos observar?** La serie cambia de manera muy clara cuando cambia la situación operativa de la línea. Primero observamos la operación previa al accidente, después un cierre prolongado y finalmente una reapertura gradual hasta llegar a la operación con las 20 estaciones. Por esta razón, el análisis de patrones habituales se concentra en la etapa final.
+\begin{queobservar}
+La serie cambia de manera muy clara cuando cambia la situación operativa de la línea. Primero observamos la operación previa al accidente, después un cierre prolongado y finalmente una reapertura gradual hasta llegar a la operación con las 20 estaciones. Por esta razón, el análisis de patrones habituales se concentra en la etapa final.
+\end{queobservar}
 
 La figura también muestra que la afluencia durante 2024--2025 presenta una recuperación y una evolución ascendente. Para el problema planteado, esto es importante porque una misma diferencia absoluta de pasajeros puede representar una proporción distinta cuando el nivel general de demanda cambia.
 
-*Nota técnica: las franjas del gráfico no forman parte del modelo; únicamente ayudan a contextualizar los cambios operativos que afectan a la interpretación de la serie.*
+\begin{notatecnica}
+Las franjas del gráfico no forman parte del modelo; únicamente ayudan a contextualizar los cambios operativos que afectan a la interpretación de la serie.
+\end{notatecnica}
 
 ## ¿Qué día tiene menor demanda?
 
@@ -257,7 +267,7 @@ ggplot(resumen_semana, aes(x = dia_semana, y = promedio)) +
     vjust = -0.35,
     size = 3.3
   ) +
-  scale_fill_manual(values = c(`FALSE` = "#DEEBF7", `TRUE` = "#99D8C9")) +
+  scale_fill_manual(values = c(`FALSE` = "#F3E7C6", `TRUE` = "#B8901E")) +
   scale_y_continuous(
     labels = label_number(suffix = " mil", scale = 1e-3),
     expand = expansion(mult = c(0, 0.12))
@@ -270,11 +280,15 @@ ggplot(resumen_semana, aes(x = dia_semana, y = promedio)) +
   )
 ```
 
-**El domingo destaca como la principal ventana de menor demanda.** En promedio, la afluencia dominical es considerablemente menor que la observada en los días de mayor movimiento. El patrón semanal se repite a lo largo del período analizado, por lo que el domingo aparece como una alternativa natural para concentrar trabajos que reduzcan temporalmente la capacidad del servicio.
+\begin{hallazgo}
+El domingo destaca como la principal ventana de menor demanda. En promedio, la afluencia dominical es considerablemente menor que la observada en los días de mayor movimiento. El patrón semanal se repite a lo largo del período analizado, por lo que el domingo aparece como una alternativa natural para concentrar trabajos que reduzcan temporalmente la capacidad del servicio.
+\end{hallazgo}
 
 La utilidad para operaciones es sencilla: **si una intervención es inevitable, realizarla en un día de menor demanda potencialmente reduce el número de usuarios expuestos a la afectación**.
 
-*Nota técnica: el gráfico resume la serie mediante el promedio de afluencia para cada día de la semana. El análisis posterior permite estudiar este patrón semanal de manera conjunta con la tendencia de la serie.*
+\begin{notatecnica}
+El gráfico resume la serie mediante el promedio de afluencia para cada día de la semana. El análisis posterior permite estudiar este patrón semanal de manera conjunta con la tendencia de la serie.
+\end{notatecnica}
 
 # Hallazgos de la descomposición de la serie
 
@@ -343,7 +357,10 @@ componentes |>
 
 **Variaciones sin patrón claro.** Después de separar el crecimiento de la demanda y el ciclo semanal, las variaciones restantes representan movimientos que no siguen un patrón regular. Algunos días pueden alejarse del comportamiento esperado por vacaciones, días festivos, eventos u otras circunstancias específicas.
 
-*Nota técnica: esta separación se obtuvo mediante la función `decompose()` con una frecuencia de 7 y un modelo aditivo. El procedimiento separa la serie en tendencia, componente estacional semanal y variación residual.*
+\begin{notatecnica}
+Esta separación se obtuvo mediante la función 
+\texttt{decompose()} con una frecuencia de 7 y un modelo aditivo. El procedimiento separa la serie en tendencia, componente estacional semanal y variación residual.
+\end{notatecnica
 
 # Hallazgos de las transformaciones aplicadas a la serie
 
@@ -383,10 +400,13 @@ La **diferencia de 7 días** compara, por ejemplo, un lunes con el lunes anterio
 
 En conjunto, estas transformaciones nos permiten mirar la misma información desde tres perspectivas: **comparar cambios proporcionales, detectar movimientos diarios y distinguir cambios inusuales de los que son parte del ciclo semanal**. Esto facilita la preparación de la serie para etapas posteriores de análisis y pronóstico.
 
-*Nota técnica: la primera transformación corresponde a $\log(y_t)$. La segunda corresponde a la primera diferencia, $y_t-y_{t-1}$, y la tercera a la diferencia estacional de periodo 7, $y_t-y_{t-7}$. Estas operaciones son habituales como preparación para modelos de series de tiempo porque ayudan a separar el comportamiento sistemático de los cambios restantes.*
+\begin{notatecnica}
+La primera transformación corresponde a $\log(y_t)$. La segunda corresponde a la primera diferencia, $y_t-y_{t-1}$, y la tercera a la diferencia estacional de periodo 7, $y_t-y_{t-7}$. Estas operaciones son habituales como preparación para modelos de series de tiempo porque ayudan a separar el comportamiento sistemático de los cambios restantes.
+\end{notatecnica}
 
 # Conclusiones
 
+\begin{hallazgo}
 El análisis permite llegar a cuatro conclusiones principales.
 
 **1. La demanda cambia con el tiempo.** La operación plena de 2024--2025 presenta una evolución ascendente de la afluencia. Por ello, no es suficiente describir un nivel promedio: también importa considerar cómo cambia ese nivel a lo largo del tiempo.
@@ -396,7 +416,10 @@ El análisis permite llegar a cuatro conclusiones principales.
 **3. El patrón semanal es útil para la planeación.** Debido a que las diferencias entre los días se repiten de forma consistente, el calendario semanal ofrece una señal sencilla para identificar posibles ventanas de menor demanda. Esto puede complementar la decisión operativa sobre cuándo realizar intervenciones de mantenimiento.
 
 **4. Las transformaciones facilitan el análisis estadístico.** La escala logarítmica permite estudiar los cambios de forma proporcional, mientras que la diferenciación ayuda a retirar patrones persistentes para concentrarse en los cambios que no son explicados por el comportamiento habitual. Estas herramientas dejan la serie en una forma más apropiada para etapas posteriores de modelación y pronóstico.
+\end{hallazgo}
 
 En términos prácticos, **el resultado más útil para la pregunta inicial es que el domingo aparece como una ventana recurrente de menor demanda**. No significa que toda intervención deba realizarse necesariamente ese día, pero sí que el comportamiento histórico de la serie proporciona evidencia para considerarlo dentro de la planeación, junto con otras restricciones operativas que no están incluidas en este análisis.
 
-*Nota técnica final: los resultados corresponden al período de operación plena definido en este informe. La etapa de modelación y pronóstico queda fuera del alcance de esta práctica, pero las transformaciones y hallazgos obtenidos constituyen una base para un modelo de series de tiempo posterior.*
+\begin{notatecnica}
+Los resultados corresponden al período de operación plena definido en este informe. La etapa de modelación y pronóstico queda fuera del alcance de esta práctica, pero las transformaciones y hallazgos obtenidos constituyen una base para un modelo de series de tiempo posterior.
+\end{notatecnica}
