@@ -11,6 +11,20 @@
 
 \usepackage{varios}
 \graphicspath{{plantilla/}}
+\usepackage{varios}
+\graphicspath{{plantilla/}}
+% ------------------------------------------------------------------
+% Paleta Línea 12 (Línea Dorada) — sobrescribe los colores UNAM.
+% Todo lo que ya usa estos nombres (portada, secciones, cajas,
+% hipervínculos) hereda el dorado automáticamente.
+% ------------------------------------------------------------------
+\definecolor{UNAMBlue}{HTML}{B8901E}        % dorado principal
+\definecolor{UNAMAccent}{HTML}{8A6A16}      % dorado oscuro (contraste)
+\definecolor{UNAMLightBlue}{HTML}{F3E7C6}   % fondo claro dorado
+\definecolor{UNAMLightAccent}{HTML}{EAD6A0} % fondo claro dorado oscuro
+\definecolor{UNAMMuted}{HTML}{5B5B5B}       % gris neutro, sin cambio
+\definecolor{UNAMText}{HTML}{262626}        % texto principal
+\definecolor{UNAMLightGray}{HTML}{FBF9F4}   % blanco hueso
 
 % Matemáticas modernas para XeLaTeX
 \usepackage{unicode-math}
@@ -57,18 +71,21 @@
       \vspace{0.12cm}
       {\sffamily\footnotesize\color{UNAMMuted}\materia\par}
       \vspace{0.75cm}
-      \colorbox{UNAMBlue}{\parbox{0.82\textwidth}{%
+        \colorbox{UNAMBlue}{\parbox{0.82\textwidth}{%
         \centering
         \vspace{0.22cm}
         {\sffamily\color{white}\bfseries\fontsize{24}{29}\selectfont \TituloTarea\par}
         \vspace{0.22cm}
       }}
-      \vspace{0.45cm}
+      \par\vspace{0.3cm}
+      \textcolor{UNAMAccent}{\rule{4.5cm}{1pt}}\par
+      \vspace{0.5cm}
       {\sffamily\normalsize\color{UNAMText}Análisis de la afluencia de pasajeros de la Línea 12 del Metro de la Ciudad de México\par}
       \vspace{0.85cm}
       {\sffamily\small\color{UNAMMuted}Período de análisis: operación plena, 2024--2025\par}
       \vfill
       %{\sffamily\small\bfseries \Tony\par}
+      \vspace{0.85cm}
       {\large \Autores \par}
       \vspace{0.15cm}
     \end{center}
