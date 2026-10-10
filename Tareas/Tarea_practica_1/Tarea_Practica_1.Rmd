@@ -37,6 +37,7 @@ library(lubridate)
 library(tsibble)
 library(feasts)
 library(scales)
+library(patchwork)
 library(knitr)
 library(kableExtra)
 ```
@@ -358,7 +359,7 @@ componentes |>
 **Variaciones sin patrón claro.** Después de separar el crecimiento de la demanda y el ciclo semanal, las variaciones restantes representan movimientos que no siguen un patrón regular. Algunos días pueden alejarse del comportamiento esperado por vacaciones, días festivos, eventos u otras circunstancias específicas.
 
 \begin{notatecnica}
-Esta separación se obtuvo mediante la función 
+Esta separación se obtuvo mediante la función
 \texttt{decompose()} con una frecuencia de 7 y un modelo aditivo. El procedimiento separa la serie en tendencia, componente estacional semanal y variación residual.
 \end{notatecnica}
 
@@ -383,20 +384,64 @@ Conforme aumenta la afluencia, también aumenta el tamaño de las diferencias ab
 
 Por eso aplicamos una transformación logarítmica. En lugar de mirar únicamente cuántos pasajeros cambian, esta escala ayuda a interpretar los cambios **en relación con el nivel de afluencia**.
 
-## Tres formas de mirar los cambios
+```{r grafico-log, fig.cap="Afluencia diaria en su escala original (arriba) y en escala logarítmica (abajo).", fig.height=4.6}
+p_orig <- ggplot(datos_transf, aes(x = fecha, y = afluencia)) +
+  geom_line(linewidth = 0.3, color = "grey30") +
+  scale_y_continuous(labels = label_number(suffix = " mil", scale = 1e-3)) +
+  labs(x = NULL, y = "Pasajeros / día") +
+  theme_minimal(base_size = 10)
 
-Para cada transformación podemos hacernos una pregunta distinta. No es necesario mostrar una gráfica adicional para entender su utilidad.
+p_log <- ggplot(datos_transf, aes(x = fecha, y = log_af)) +
+  geom_line(linewidth = 0.3, color = "#1565C0") +
+  labs(x = NULL, y = "log(pasajeros / día)") +
+  theme_minimal(base_size = 10)
 
-**1. ¿Los cambios son comparables aunque la demanda aumente?**  
-La **escala logarítmica** permite observar las variaciones de manera proporcional al nivel de pasajeros. Esto ayuda a comparar períodos en los que la línea tiene niveles de demanda diferentes.
+p_orig / p_log
+```
 
-**2. ¿Cuánto cambió la afluencia respecto al día anterior?**  
-La **diferencia de 1 día** compara cada observación con la del día inmediatamente anterior. Es útil para detectar aumentos o disminuciones repentinas, aunque todavía conserva el efecto normal del calendario semanal.
+\begin{hallazgo}
+En la escala original, la amplitud entre un domingo de poca demanda y un viernes de mucha demanda crece junto con el nivel general de la línea: hacia el final del período esa diferencia es considerablemente mayor que al inicio. En la escala logarítmica, en cambio, el tamaño relativo de esa misma brecha semanal se mantiene mucho más parecido a lo largo del tiempo. En otras palabras: el domingo representa, proporcionalmente, un respiro de demanda similar en 2024 y en 2025, aunque en pasajeros absolutos la diferencia ya no sea la misma.
+\end{hallazgo}
 
-**3. ¿Cambió la afluencia respecto al mismo día de la semana anterior?**  
-La **diferencia de 7 días** compara, por ejemplo, un lunes con el lunes anterior y un domingo con el domingo anterior. Esta referencia permite identificar cambios que se apartan del comportamiento semanal habitual.
+\begin{notatecnica}
+La amplitud (máximo menos mínimo) calculada por bloques de 90 días pasa de alrededor de 225 mil pasajeros al inicio del período a más de 310 mil hacia el final, en la escala original. En la escala logarítmica, la misma amplitud se mantiene entre 1.0 y 1.5 en todos los bloques, una variación mucho menor en términos proporcionales. Esto es consistente con una varianza que crece junto con el nivel de la serie, el motivo habitual para aplicar una transformación logarítmica.
+\end{notatecnica}
 
-### ¿Qué aportan al análisis?
+## ¿Qué pasa al diferenciar la serie?
+
+Diferenciar significa comparar cada observación contra una observación anterior, en lugar de mirar el valor absoluto. Aquí usamos dos referencias distintas: el día inmediatamente anterior, y el mismo día de la semana una semana antes.
+
+```{r grafico-diff, fig.cap="Diferencia respecto al día anterior (arriba) y diferencia respecto al mismo día de la semana anterior (abajo).", fig.height=4.6}
+p_diff1 <- datos_transf |>
+  filter(!is.na(diff1)) |>
+  ggplot(aes(x = fecha, y = diff1)) +
+  geom_line(linewidth = 0.3, color = "grey35") +
+  geom_hline(yintercept = 0, color = "#C62828", linetype = "dashed", linewidth = 0.5) +
+  scale_y_continuous(labels = label_number(suffix = " mil", scale = 1e-3)) +
+  labs(x = NULL, y = "Cambio vs. día anterior") +
+  theme_minimal(base_size = 10)
+
+p_diff7 <- datos_transf |>
+  filter(!is.na(diff7)) |>
+  ggplot(aes(x = fecha, y = diff7)) +
+  geom_line(linewidth = 0.3, color = "#1565C0") +
+  geom_hline(yintercept = 0, color = "#C62828", linetype = "dashed", linewidth = 0.5) +
+  scale_y_continuous(labels = label_number(suffix = " mil", scale = 1e-3)) +
+  labs(x = NULL, y = "Cambio vs. mismo día, semana anterior") +
+  theme_minimal(base_size = 10)
+
+p_diff1 / p_diff7
+```
+
+\begin{hallazgo}
+Al comparar contra el día anterior (panel superior), el patrón semanal sigue siendo muy visible: los saltos de domingo a lunes y de viernes a sábado se repiten como picos y valles regulares, semana tras semana. Al comparar contra el mismo día de la semana anterior (panel inferior), en cambio, esos saltos regulares desaparecen casi por completo y la serie oscila de forma mucho más irregular alrededor de cero. Esto confirma que buena parte de lo que parece "ruido" en la serie original es, en realidad, el ciclo semanal predecible que ya identificamos: una vez que se compara cada día contra su propio equivalente de la semana pasada, lo que queda es mucho más parecido a variación sin patrón.
+\end{hallazgo}
+
+\begin{notatecnica}
+La dispersión (desviación estándar) de la serie original es de aproximadamente 83 mil pasajeros. Al diferenciar contra el día anterior, la dispersión sube a cerca de 93 mil, porque se le suma el salto semanal a la variación normal. Al diferenciar contra el mismo día de la semana anterior, la dispersión baja a cerca de 48 mil: casi la mitad, señal de que esta transformación es la que mejor retira tanto la tendencia como la estacionalidad semanal, y la más adecuada como punto de partida para un modelo de pronóstico posterior.
+\end{notatecnica}
+
+## ¿Qué aportan al análisis?
 
 En conjunto, estas transformaciones nos permiten mirar la misma información desde tres perspectivas: **comparar cambios proporcionales, detectar movimientos diarios y distinguir cambios inusuales de los que son parte del ciclo semanal**. Esto facilita la preparación de la serie para etapas posteriores de análisis y pronóstico.
 
@@ -415,7 +460,7 @@ El análisis permite llegar a cuatro conclusiones principales.
 
 **3. El patrón semanal es útil para la planeación.** Debido a que las diferencias entre los días se repiten de forma consistente, el calendario semanal ofrece una señal sencilla para identificar posibles ventanas de menor demanda. Esto puede complementar la decisión operativa sobre cuándo realizar intervenciones de mantenimiento.
 
-**4. Las transformaciones facilitan el análisis estadístico.** La escala logarítmica permite estudiar los cambios de forma proporcional, mientras que la diferenciación ayuda a retirar patrones persistentes para concentrarse en los cambios que no son explicados por el comportamiento habitual. Estas herramientas dejan la serie en una forma más apropiada para etapas posteriores de modelación y pronóstico.
+**4. Las transformaciones facilitan el análisis estadístico.** La escala logarítmica permite estudiar los cambios de forma proporcional, mientras que la diferenciación ayuda a retirar patrones persistentes para concentrarse en los cambios que no son explicados por el comportamiento habitual. En particular, la diferencia estacional de 7 días es la que deja la serie más cercana a un comportamiento sin patrón aparente, lo que la vuelve un punto de partida natural para etapas posteriores de modelación y pronóstico.
 \end{hallazgo}
 
 En términos prácticos, **el resultado más útil para la pregunta inicial es que el domingo aparece como una ventana recurrente de menor demanda**. No significa que toda intervención deba realizarse necesariamente ese día, pero sí que el comportamiento histórico de la serie proporciona evidencia para considerarlo dentro de la planeación, junto con otras restricciones operativas que no están incluidas en este análisis.
@@ -423,3 +468,95 @@ En términos prácticos, **el resultado más útil para la pregunta inicial es q
 \begin{notatecnica}
 Los resultados corresponden al período de operación plena definido en este informe. La etapa de modelación y pronóstico queda fuera del alcance de esta práctica, pero las transformaciones y hallazgos obtenidos constituyen una base para un modelo de series de tiempo posterior.
 \end{notatecnica}
+
+# Análisis de correlogramas (ACF y PACF)
+
+## ¿Para qué sirve un correlograma?
+
+Un **correlograma** muestra qué tan parecido es un valor de la serie a sus propios valores pasados, rezago por rezago (un día atrás, dos días atrás, y así sucesivamente). Hay dos versiones complementarias: la **ACF** (función de autocorrelación) mide esa relación de forma directa, y la **PACF** (autocorrelación parcial) mide lo mismo pero "limpiando" el efecto de los rezagos intermedios.
+
+Esta herramienta es el paso natural antes de ajustar un modelo ARIMA: la forma de la ACF y la PACF sugiere qué tan complejo necesita ser el modelo y da una primera idea de sus parámetros, antes de afinarlos con una función de búsqueda automática como `auto.arima()`.
+
+```{r funcion-correlograma, include=FALSE}
+grafico_correlograma <- function(serie, nlags = 21,
+                                  tipo = c("acf", "pacf"), titulo_y) {
+  tipo <- match.arg(tipo)
+
+  res <- if (tipo == "acf") {
+    acf(serie, lag.max = nlags, plot = FALSE)
+  } else {
+    pacf(serie, lag.max = nlags, plot = FALSE)
+  }
+
+  valores <- as.numeric(res$acf)
+  lags    <- as.numeric(res$lag)
+
+  if (tipo == "acf") {
+    valores <- valores[-1]
+    lags    <- lags[-1]
+  }
+
+  banda <- 1.96 / sqrt(length(serie))
+
+  tibble(lag = lags, valor = valores) |>
+    ggplot(aes(x = lag, y = valor)) +
+    geom_hline(yintercept = 0, color = "grey50", linewidth = 0.3) +
+    geom_hline(
+      yintercept = c(-banda, banda),
+      color = "#C62828", linetype = "dashed", linewidth = 0.4
+    ) +
+    geom_segment(aes(xend = lag, yend = 0), color = "#1565C0", linewidth = 0.6) +
+    geom_point(color = "#1565C0", size = 1.2) +
+    scale_x_continuous(breaks = seq(0, nlags, by = 7)) +
+    labs(x = "Rezago (días)", y = titulo_y) +
+    theme_minimal(base_size = 10)
+}
+```
+
+## Correlogramas de la serie original: la huella de la estacionalidad
+
+Antes de diferenciar, vale la pena ver cómo se ve el correlograma de la afluencia diaria tal cual, sin ningún ajuste.
+
+```{r correlograma-original, fig.cap="ACF y PACF de la afluencia diaria sin transformar, período de operación plena.", fig.height=3.2}
+p_acf_orig  <- grafico_correlograma(datos_pleno$afluencia, titulo_y = "ACF")
+p_pacf_orig <- grafico_correlograma(
+  datos_pleno$afluencia, tipo = "pacf", titulo_y = "PACF"
+)
+
+p_acf_orig + p_pacf_orig
+```
+
+\begin{hallazgo}
+La ACF no decae: se mantiene alta incluso varias semanas atrás, y tiene picos muy marcados exactamente cada 7 rezagos. Esto es la firma típica de una serie con fuerte estacionalidad semanal todavía presente. Un correlograma con este aspecto no es útil para elegir directamente los parámetros de un modelo ARIMA, porque la estructura semanal domina por completo la lectura; primero hay que quitarla, como ya hicimos en la sección de transformaciones.
+\end{hallazgo}
+
+\begin{notatecnica}
+En el rezago 1, ACF $\approx 0.37$ y PACF $\approx 0.37$. En los rezagos múltiplos de 7 (7, 14 y 21), la ACF alcanza $0.82$, $0.78$ y $0.75$ respectivamente, muy por encima de la banda de confianza aproximada de $\pm 1.96/\sqrt{n} \approx \pm 0.074$. Este patrón confirma, desde el correlograma, lo mismo que mostró la descomposición: la serie no es estacionaria y conserva un ciclo semanal muy fuerte.
+\end{notatecnica}
+
+## Correlogramas de la serie diferenciada: candidatos para el modelo ARIMA
+
+Al aplicar la diferencia estacional de 7 días que identificamos en la sección anterior, el correlograma cambia por completo.
+
+```{r correlograma-diff7, fig.cap="ACF y PACF de la serie diferenciada (lag 7), período de operación plena.", fig.height=3.2}
+diff7_valores <- datos_pleno |>
+  arrange(fecha) |>
+  mutate(diff7 = afluencia - dplyr::lag(afluencia, 7)) |>
+  filter(!is.na(diff7)) |>
+  pull(diff7)
+
+p_acf_diff  <- grafico_correlograma(diff7_valores, titulo_y = "ACF")
+p_pacf_diff <- grafico_correlograma(diff7_valores, tipo = "pacf", titulo_y = "PACF")
+
+p_acf_diff + p_pacf_diff
+```
+
+\begin{hallazgo}
+En los primeros rezagos (1 a 3), la ACF decae de forma gradual mientras que la PACF se corta de tajo después del rezago 1: esa combinación es la firma típica de un componente autorregresivo simple, un AR(1), para el comportamiento día a día. Además, tanto la ACF como la PACF muestran un quiebre marcado y negativo justo en el rezago 7 —consistente con haber diferenciado la serie con ese mismo periodo— lo que sugiere que conviene incluir también un componente de promedio móvil estacional. Fuera de esos puntos, el correlograma ya no muestra una estructura clara, señal de que la diferenciación sí dejó la serie en una forma mucho más manejable para un modelo ARIMA.
+\end{hallazgo}
+
+\begin{notatecnica}
+En el rezago 1, ACF $\approx 0.37$ y PACF $\approx 0.37$; en los rezagos 2 y 3 la ACF cae a $0.17$ y $0.09$ mientras la PACF ya no es significativa ($\approx 0.04$ y $0.01$), un decaimiento geométrico consistente con un AR(1). En el rezago 7, ACF $\approx -0.37$ y PACF $\approx -0.38$, ambos muy por debajo de la banda de confianza. Como punto de partida razonable para explorar con \texttt{auto.arima()}, esto sugiere un modelo del tipo SARIMA(1,0,0)(0,1,1)$_{[7]}$: un término autorregresivo de orden 1 para la parte diaria, una diferencia estacional de periodo 7 (ya aplicada) y un término de promedio móvil estacional de orden 1. La forma más confiable de confirmar el orden final sigue siendo dejar que \texttt{auto.arima()} compare varias combinaciones por su criterio de información, usando este análisis como punto de partida informado en lugar de una búsqueda a ciegas.
+\end{notatecnica}
+
+Con este resultado, el equipo cuenta con una base concreta para la siguiente etapa del proyecto: ajustar y validar un modelo ARIMA sobre la serie de afluencia de la Línea 12.
