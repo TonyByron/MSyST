@@ -38,6 +38,7 @@ library(tsibble)
 library(feasts)
 library(scales)
 library(patchwork)
+library(forecast)
 library(knitr)
 library(kableExtra)
 ```
@@ -449,7 +450,7 @@ En conjunto, estas transformaciones nos permiten mirar la misma información des
 La primera transformación corresponde a $\log(y_t)$. La segunda corresponde a la primera diferencia, $y_t-y_{t-1}$, y la tercera a la diferencia estacional de periodo 7, $y_t-y_{t-7}$. Estas operaciones son habituales como preparación para modelos de series de tiempo porque ayudan a separar el comportamiento sistemático de los cambios restantes.
 \end{notatecnica}
 
-# Conclusiones
+# Conclusiones de la primera parte
 
 \begin{hallazgo}
 El análisis permite llegar a cuatro conclusiones principales.
@@ -567,25 +568,31 @@ Con este resultado, el equipo cuenta con una base concreta para la siguiente eta
 
 Tomando como base la estructura sugerida por los correlogramas de la serie diferenciada, se procedió a ajustar un modelo ARIMA utilizando la función \texttt{forecast::auto.arima()}, permitiendo una búsqueda automática informada por el componente estacional semanal de periodo 7.
 
-```{r ajuste_arima, fig.cap="Ajuste automático de un modelo ARIMA sobre la afluencia diaria (operación plena).", fig.height=3.2}
-library(forecast)
+```{r ajuste-arima}
+# Se usa serie_ts_base (objeto ts, frequency = 7), no la tsibble serie_ts:
+# auto.arima() trabaja sobre series de tipo ts y no reconoce tsibbles.
+modelo_arima <- auto.arima(serie_ts_base, seasonal = TRUE, D = 1)
 
-# Ajuste del modelo ARIMA sobre la serie de operación plena
-modelo_arima <- auto.arima(serie_ts, seasonal = TRUE, D = 1)
+coef_arima <- tibble(
+  Parámetro        = names(modelo_arima$coef),
+  Estimación       = round(as.numeric(modelo_arima$coef), 3),
+  "Error estándar" = round(sqrt(diag(modelo_arima$var.coef)), 3)
+)
 
-# Resumen de los coeficientes estimados
-summary(modelo_arima)
+tabla2(coef_arima)
 ```
+
 \begin{hallazgo}
 El modelo ajustado corresponde a SARIMA(1,0,0)(1,1,0)[7] con drift.
 Los coeficientes estimados fueron:
 
-AR(1) $\approx$ 0.41 (positivo y significativo).
+**AR(1)** $\approx$ 0.41 (positivo y significativo).
 
-SAR(1) $\approx$ -0.43 (negativo, corrige choques en el ciclo semanal).
+**SAR(1)** $\approx$ -0.43 (negativo, corrige choques en el ciclo semanal).
 
-Drift $\approx$ -1.46 (captura una ligera tendencia en la serie).
-El AIC=16722 y BIC=16741 confirman que el modelo es parsimonioso y adecuado.
+**Drift** $\approx$ -1.46 (captura una ligera tendencia en la serie).
+
+El AIC $=16722$ y BIC $=16741$ confirman que el modelo es parsimonioso y adecuado.
 \end{hallazgo}
 
 \begin{notatecnica}
@@ -595,113 +602,127 @@ La parte SAR(1) refleja la relación con el mismo día de la semana previa.
 La diferencia estacional de orden 1 elimina el ciclo semanal, dejando residuos más cercanos a ruido blanco.
 \end{notatecnica}
 
-
 ## Diagnóstico de residuos del modelo ajustado
 
 Para asegurar la validez estadística del modelo ARIMA ajustado, es fundamental analizar sus residuos. Un buen modelo debe capturar toda la información sistemática de la serie, dejando en los residuos únicamente "ruido blanco" (un comportamiento aleatorio sin patrones).
 
 ```{r diagnostico-residuos, fig.cap="Gráficas de diagnóstico de los residuos del modelo SARIMA.", fig.height=4}
-
-# Diagnóstico de residuos y validación del modelo
-
-# Extraer los componentes de los residuos del modelo ARIMA
 residuos <- as.numeric(modelo_arima$residuals)
-fechas <- datos_pleno$fecha[!is.na(datos_pleno$afluencia) & seq_along(datos_pleno$afluencia) <= length(residuos)]
 
 df_res <- tibble(
-  fecha = datos_pleno$fecha[1:length(residuos)],
+  fecha   = datos_pleno$fecha[1:length(residuos)],
   residuo = residuos
 )
 
-# 1. Gráfica de la serie de residuos en el tiempo
+# 1. Serie de residuos en el tiempo
 p_res <- ggplot(df_res, aes(x = fecha, y = residuo)) +
   geom_line(color = "#1565C0", linewidth = 0.3) +
   geom_hline(yintercept = 0, color = "#C62828", linetype = "dashed", linewidth = 0.5) +
   scale_y_continuous(labels = label_number(scale = 1e-3, suffix = " mil")) +
-  labs(title = "Residuos de ARIMA con tendencia (drift)", x = NULL, y = "Residuos") +
+  labs(x = NULL, y = "Residuos") +
   theme_minimal(base_size = 10)
 
 # 2. Correlograma (ACF) de los residuos
 acf_obj <- acf(residuos, plot = FALSE)
-df_acf <- tibble(lag = as.numeric(acf_obj$lag[-1]), acf = as.numeric(acf_obj$acf[-1]))
+df_acf  <- tibble(
+  lag = as.numeric(acf_obj$lag[-1]),
+  acf = as.numeric(acf_obj$acf[-1])
+)
 banda <- 1.96 / sqrt(length(residuos))
 
 p_acf <- ggplot(df_acf, aes(x = lag, y = acf)) +
   geom_hline(yintercept = 0, color = "grey50", linewidth = 0.3) +
   geom_hline(yintercept = c(-banda, banda), color = "#C62828", linetype = "dashed", linewidth = 0.4) +
-  geom_segment(aes(xend = lag, yend = 0), color = "#2E7D32", linewidth = 0.6) +
-  geom_point(color = "#2E7D32", size = 1.2) +
+  geom_segment(aes(xend = lag, yend = 0), color = "#1565C0", linewidth = 0.6) +
+  geom_point(color = "#1565C0", size = 1.2) +
   labs(x = "Rezago (días)", y = "ACF") +
   theme_minimal(base_size = 10)
 
 # 3. Histograma de los residuos
 p_hist <- ggplot(df_res, aes(x = residuo)) +
-  geom_histogram(aes(y = ..density..), bins = 30, fill = "#F3E7C6", color = "#B8901E", alpha = 0.8) +
-  stat_function(fun = dnorm, args = list(mean = mean(residuos, na.rm = TRUE), sd = sd(residuos, na.rm = TRUE)), color = "#C62828", linewidth = 0.8) +
+  geom_histogram(aes(y = after_stat(density)), bins = 30, fill = "#F3E7C6", color = "#B8901E", alpha = 0.8) +
+  stat_function(
+    fun = dnorm,
+    args = list(mean = mean(residuos, na.rm = TRUE), sd = sd(residuos, na.rm = TRUE)),
+    color = "#C62828", linewidth = 0.8
+  ) +
   scale_x_continuous(labels = label_number(scale = 1e-3, suffix = " mil")) +
   labs(x = "Residuos", y = "Densidad") +
   theme_minimal(base_size = 10)
 
-# Combinar las gráficas utilizando patchwork
-(p_res) / (p_acf + p_hist)
-
-
+p_res / (p_acf + p_hist)
 ```
+
 \begin{hallazgo}
-El análisis visual de los residuos personalizados muestra características óptimas para dar por válido el ajuste del modelo:
+El análisis visual de los residuos muestra características adecuadas para dar por válido el ajuste del modelo:
 
-\textbf{Evolución temporal:} Los errores fluctúan de manera estable alrededor de cero, sin mostrar tendencias crecientes o decrecientes marcadas a lo largo del tiempo. Las unidades se expresan claramente en miles de pasajeros, facilitando su lectura cuantitativa.
+**Evolución temporal:** los errores fluctúan de manera estable alrededor de cero, sin mostrar tendencias crecientes o decrecientes marcadas a lo largo del tiempo.
 
-\textbf{Independencia (ACF):} Las autocorrelaciones de los residuos se encuentran prácticamente en su totalidad dentro de las bandas de confianza de color rojo, lo que indica que no queda información sistemática o patrones ocultos por explotar.
+**Independencia (ACF):** las autocorrelaciones de los residuos se encuentran prácticamente en su totalidad dentro de las bandas de confianza, lo que indica que no queda información sistemática o patrones ocultos por explotar.
 
-\textbf{Distribución de errores:} El histograma muestra una campana centrada en cero que se aproxima adecuadamente a una distribución normal (curva roja), validando el cumplimiento de las hipótesis de normalidad en los errores del modelo.
+**Distribución de errores:** el histograma muestra una campana centrada en cero que se aproxima adecuadamente a una distribución normal, validando el cumplimiento de las hipótesis de normalidad en los errores del modelo.
 \end{hallazgo}
 
-La gráfica de residuos no muestra tendencias sistemáticas evidentes ni cambios drásticos en su variabilidad a lo largo del tiempo. Esto respalda la validez estadística del modelo ajustado para 
+La gráfica de residuos no muestra tendencias sistemáticas evidentes ni cambios drásticos en su variabilidad a lo largo del tiempo. Esto respalda la validez estadística del modelo ajustado.
 
-# Predicciones
+# Pronóstico de la afluencia
 
 ## Proyección de la afluencia a corto plazo
 
-Utilizando el modelo ARIMA validado, es posible generar proyecciones de la afluencia diaria para las siguientes semanas, lo cual resulta de gran utilidad para anticipar la demanda de pasajeros.
+Utilizando el modelo ARIMA validado, es posible generar proyecciones de la afluencia diaria para las siguientes semanas, lo cual resulta de gran utilidad para anticipar la demanda de pasajeros. A continuación se presenta la proyección a 30 días.
 
-Proyeccion a 30 días:
-
-```{r predicciones, fig.cap="Pronóstico de afluencia para los siguientes 30 días.", fig.height=3.8}
-# Pronóstico a 30 días
+```{r predicciones, fig.cap="Pronóstico de afluencia para los siguientes 30 días, con bandas de confianza del 80% y 95%.", fig.height=3.8}
 pred <- forecast(modelo_arima, h = 30)
 
-autoplot(pred, colour = "#1565C0", fill = "#90CAF9") +
-  scale_y_continuous(
-    labels = label_number(big.mark = ",", suffix = "")
-  ) +
-  labs(
-    x = "Año",
-    y = "Pasajeros pronosticados",
-    title = "Pronóstico de afluencia en Línea 12 (30 días)",
-    subtitle = "Incluye tendencia y ciclo semanal con intervalos de confianza"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    plot.title = element_text(face = "bold", size = 14, color = "#0D47A1"),
-    plot.subtitle = element_text(size = 11, color = "#424242"),
-    axis.title.y = element_text(face = "bold", color = "#0D47A1"),
-    axis.title.x = element_text(face = "bold", color = "#0D47A1"),
-    axis.text.x = element_text(angle = 30, hjust = 1, color = "#212121"),
-    axis.text.y = element_text(color = "#212121"),
-    panel.grid.minor = element_blank(),
-    panel.grid.major.x = element_blank()
-  )
+fechas_pred <- seq(max(datos_pleno$fecha) + 1, by = "day", length.out = 30)
+
+df_pred <- tibble(
+  fecha = fechas_pred,
+  media = as.numeric(pred$mean),
+  lo80  = as.numeric(pred$lower[, 1]),
+  hi80  = as.numeric(pred$upper[, 1]),
+  lo95  = as.numeric(pred$lower[, 2]),
+  hi95  = as.numeric(pred$upper[, 2])
+)
+
+df_hist <- datos_pleno |>
+  filter(fecha >= max(fecha) - 60) |>
+  select(fecha, afluencia)
+
+ggplot() +
+  geom_line(data = df_hist, aes(x = fecha, y = afluencia), color = "grey30", linewidth = 0.3) +
+  geom_ribbon(data = df_pred, aes(x = fecha, ymin = lo95, ymax = hi95), fill = "#1565C0", alpha = 0.12) +
+  geom_ribbon(data = df_pred, aes(x = fecha, ymin = lo80, ymax = hi80), fill = "#1565C0", alpha = 0.22) +
+  geom_line(data = df_pred, aes(x = fecha, y = media), color = "#1565C0", linewidth = 0.5) +
+  scale_y_continuous(labels = label_number(suffix = " mil", scale = 1e-3)) +
+  scale_x_date(date_labels = "%d %b") +
+  labs(x = NULL, y = "Pasajeros por día") +
+  theme_minimal(base_size = 10) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
 ```
 
 \begin{hallazgo}
-La proyeccion a corto plazo demuestra que el modelo captura exitosamente tanto la tendencia ascendente de recuperación como la ciclicidad operativa de la línea:
+La proyección a corto plazo muestra que el modelo captura tanto la tendencia de la serie como su ciclicidad semanal:
 
-\textbf{Respeto al ciclo semanal:} Las proyecciones replican de forma consistente las caídas recurrentes correspondientes a los días domingos y los repuntes a mitad de semana.
+**Respeto al ciclo semanal:** las proyecciones replican de forma consistente las caídas recurrentes de los domingos y los repuntes a mitad de semana.
 
-\textbf{Comportamiento de la demanda:} Los valores pronosticados oscilan de manera estable entre los rangos habituales observados durante el cierre del periodo de operación plena, validando la congruencia lógica del modelo.
+**Comportamiento de la demanda:** los valores pronosticados oscilan de manera estable dentro de los rangos habituales observados durante el período de operación plena, lo que respalda la congruencia del modelo.
 \end{hallazgo}
 
 \begin{notatecnica}
-Las bandas de pronóstico (representadas en el sombreado azul) se amplían de forma moderada conforme se extiende el horizonte temporal a 30 días. Esto refleja de manera matemática la incertidumbre acumulada propia de las proyecciones futuras, constituyendo un insumo valioso para que los planificadores evalúen escenarios esperados y establezcan con mayor seguridad las ventanas operativas de mantenimiento.
+Las bandas de pronóstico (80\% y 95\%) se amplían de forma moderada conforme se extiende el horizonte temporal a 30 días. Esto refleja la incertidumbre acumulada propia de las proyecciones futuras, un insumo valioso para que los planificadores evalúen escenarios y establezcan con mayor seguridad las ventanas operativas de mantenimiento.
 \end{notatecnica}
+
+# Conclusiones generales
+
+El análisis de la afluencia de pasajeros de la Línea 12 del Metro nos permitió identificar patrones de comportamiento durante el periodo de operación con normalidad, de enero de 2024 a diciembre de 2025. Mediante la descomposición, las transformaciones y el ajuste de un modelo de series de tiempo, se obtuvieron los siguientes hallazgos:
+
+La demanda presenta una tendencia creciente y un patrón semanal definido. La afluencia aumenta a lo largo del periodo analizado, por lo que la demanda no se mantiene en un nivel constante. Además, existen diferencias importantes entre los días de la semana: el domingo registra el menor promedio, con aproximadamente 166 mil pasajeros, mientras que entre semana se observan promedios de entre 337 mil y 361 mil pasajeros. Esto confirma que el comportamiento de la demanda depende tanto del momento del periodo como del día de la semana.
+
+En cuanto a las transformaciones, la primera diferencia permitió observar los cambios diarios aun conservando las fluctuaciones propias del ciclo semanal; la diferencia estacional de periodo 7 redujo considerablemente esa variabilidad, su desviación estándar fue de aproximadamente 48 mil pasajeros, frente a 93 mil en la primera diferencia, esto indica que comparar cada día con el mismo día de la semana anterior permite retirar buena parte de las variaciones asociadas al calendario semanal.
+
+Los correlogramas y el ajuste SARIMA permitieron poder visualizar el pronóstico. En la serie original se observó una autocorrelación elevada en los rezagos correspondientes a semanas anteriores, lo que confirmó la presencia de un patrón semanal importante. Después de aplicar la diferencia estacional, la estructura de autocorrelación nos permitió plantear un modelo que incorporara componentes diarios y estacionales.
+
+La diferencia estacional de siete días resultó especialmente útil para reducir las variaciones relacionadas con el calendario, mientras que el modelo SARIMA permitió elaborar una proyección inicial para las semanas siguientes.
+
+El domingo representa una posible ventana para realizar trabajos de mantenimiento. Debido a que la afluencia dominical es considerablemente menor que la de los días laborales, programar algunas intervenciones durante ese día podría reducir la cantidad de usuarios afectados. Sin embargo, esta decisión también tendría que considerar las necesidades técnicas de cada intervención, su duración y las condiciones de operación del servicio. Por lo tanto, el patrón observado constituye un criterio de apoyo para la planeación, pero no una garantía de que cualquier mantenimiento deba realizarse en domingo. Así como también es importante considerar incertidumbre que estará presente en todas las series de tiempo y cabe destacar que en una ciudad grande y caótica como lo es la Ciudad de México y su periferia, hay mucho factores que pueden afectar inesperadamente la afluencia del metro.

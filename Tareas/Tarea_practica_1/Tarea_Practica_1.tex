@@ -116,6 +116,7 @@
 % Autores
 \newcommand{\Autores}{
     \textsc{Aguirre Garcia Abraham Isaias}\\
+    \textsc{Castillo C\'ordoba Alfa Cecilia}\\
     \textsc{Larios Huitron Michelle}\\
     \textsc{Ornelas Clement Anthonie Byron}
 }
@@ -513,7 +514,7 @@ En conjunto, estas transformaciones nos permiten mirar la misma información des
 La primera transformación corresponde a $\log(y_t)$. La segunda corresponde a la primera diferencia, $y_t-y_{t-1}$, y la tercera a la diferencia estacional de periodo 7, $y_t-y_{t-7}$. Estas operaciones son habituales como preparación para modelos de series de tiempo porque ayudan a separar el comportamiento sistemático de los cambios restantes.
 \end{notatecnica}
 
-\section{Conclusiones}\label{conclusiones}
+\section{Conclusiones de la primera parte}\label{conclusiones-de-la-primera-parte}
 
 \begin{hallazgo}
 El análisis permite llegar a cuatro conclusiones principales.
@@ -591,35 +592,32 @@ Con este resultado, el equipo cuenta con una base concreta para la siguiente eta
 
 Tomando como base la estructura sugerida por los correlogramas de la serie diferenciada, se procedió a ajustar un modelo ARIMA utilizando la función \texttt{forecast::auto.arima()}, permitiendo una búsqueda automática informada por el componente estacional semanal de periodo 7.
 
-\begin{verbatim}
-## Series: serie_ts 
-## ARIMA(1,0,0)(1,1,0)[7] with drift 
-## 
-## Coefficients:
-##          ar1     sar1     drift
-##       0.4104  -0.4306   -1.4601
-## s.e.  0.0348   0.0353  259.6567
-## 
-## sigma^2 = 1.634e+09:  log likelihood = -8357.49
-## AIC=16722.97   AICc=16723.03   BIC=16741.15
-## 
-## Training set error measures:
-##                    ME     RMSE      MAE       MPE     MAPE      MASE
-## Training set 47.02801 40136.66 19564.25 -1.828182 7.687537 0.9136387
-##                     ACF1
-## Training set -0.02792859
-\end{verbatim}
+\begingroup\fontsize{10}{12}\selectfont
+
+\begin{longtable}[t]{|>{}c|c|>{}c|}
+\hline
+\cellcolor{UNAMBlue}{\textcolor{white}{\textbf{Parámetro}}} & \cellcolor{UNAMBlue}{\textcolor{white}{\textbf{Estimación}}} & \cellcolor{UNAMBlue}{\textcolor{white}{\textbf{Error estándar}}}\\
+\hline
+\cellcolor{UNAMLightBlue}{ar1} & \cellcolor{UNAMLightBlue}{0.410} & \cellcolor{UNAMLightBlue}{0.035}\\
+\hline
+\cellcolor{UNAMLightBlue}{sar1} & \cellcolor{UNAMLightBlue}{-0.431} & \cellcolor{UNAMLightBlue}{0.035}\\
+\hline
+\cellcolor{UNAMLightBlue}{drift} & \cellcolor{UNAMLightBlue}{-1.460} & \cellcolor{UNAMLightBlue}{259.657}\\
+\hline
+\end{longtable}
+\endgroup{}
 
 \begin{hallazgo}
 El modelo ajustado corresponde a SARIMA(1,0,0)(1,1,0)[7] con drift.
 Los coeficientes estimados fueron:
 
-AR(1) $\approx$ 0.41 (positivo y significativo).
+**AR(1)** $\approx$ 0.41 (positivo y significativo).
 
-SAR(1) $\approx$ -0.43 (negativo, corrige choques en el ciclo semanal).
+**SAR(1)** $\approx$ -0.43 (negativo, corrige choques en el ciclo semanal).
 
-Drift $\approx$ -1.46 (captura una ligera tendencia en la serie).
-El AIC=16722 y BIC=16741 confirman que el modelo es parsimonioso y adecuado.
+**Drift** $\approx$ -1.46 (captura una ligera tendencia en la serie).
+
+El AIC $=16722$ y BIC $=16741$ confirman que el modelo es parsimonioso y adecuado.
 \end{hallazgo}
 
 \begin{notatecnica}
@@ -641,25 +639,24 @@ Para asegurar la validez estadística del modelo ARIMA ajustado, es fundamental 
 
 \caption{Gráficas de diagnóstico de los residuos del modelo SARIMA.}\label{fig:diagnostico-residuos}
 \end{figure}
+
 \begin{hallazgo}
-El análisis visual de los residuos personalizados muestra características óptimas para dar por válido el ajuste del modelo:
+El análisis visual de los residuos muestra características adecuadas para dar por válido el ajuste del modelo:
 
-\textbf{Evolución temporal:} Los errores fluctúan de manera estable alrededor de cero, sin mostrar tendencias crecientes o decrecientes marcadas a lo largo del tiempo. Las unidades se expresan claramente en miles de pasajeros, facilitando su lectura cuantitativa.
+**Evolución temporal:** los errores fluctúan de manera estable alrededor de cero, sin mostrar tendencias crecientes o decrecientes marcadas a lo largo del tiempo.
 
-\textbf{Independencia (ACF):} Las autocorrelaciones de los residuos se encuentran prácticamente en su totalidad dentro de las bandas de confianza de color rojo, lo que indica que no queda información sistemática o patrones ocultos por explotar.
+**Independencia (ACF):** las autocorrelaciones de los residuos se encuentran prácticamente en su totalidad dentro de las bandas de confianza, lo que indica que no queda información sistemática o patrones ocultos por explotar.
 
-\textbf{Distribución de errores:} El histograma muestra una campana centrada en cero que se aproxima adecuadamente a una distribución normal (curva roja), validando el cumplimiento de las hipótesis de normalidad en los errores del modelo.
+**Distribución de errores:** el histograma muestra una campana centrada en cero que se aproxima adecuadamente a una distribución normal, validando el cumplimiento de las hipótesis de normalidad en los errores del modelo.
 \end{hallazgo}
 
-La gráfica de residuos no muestra tendencias sistemáticas evidentes ni cambios drásticos en su variabilidad a lo largo del tiempo. Esto respalda la validez estadística del modelo ajustado para
+La gráfica de residuos no muestra tendencias sistemáticas evidentes ni cambios drásticos en su variabilidad a lo largo del tiempo. Esto respalda la validez estadística del modelo ajustado.
 
-\section{Predicciones}\label{predicciones}
+\section{Pronóstico de la afluencia}\label{pronuxf3stico-de-la-afluencia}
 
 \subsection{Proyección de la afluencia a corto plazo}\label{proyecciuxf3n-de-la-afluencia-a-corto-plazo}
 
-Utilizando el modelo ARIMA validado, es posible generar proyecciones de la afluencia diaria para las siguientes semanas, lo cual resulta de gran utilidad para anticipar la demanda de pasajeros.
-
-Proyeccion a 30 días:
+Utilizando el modelo ARIMA validado, es posible generar proyecciones de la afluencia diaria para las siguientes semanas, lo cual resulta de gran utilidad para anticipar la demanda de pasajeros. A continuación se presenta la proyección a 30 días.
 
 \begin{figure}
 
@@ -667,19 +664,33 @@ Proyeccion a 30 días:
 
 }
 
-\caption{Pronóstico de afluencia para los siguientes 30 días.}\label{fig:predicciones}
+\caption{Pronóstico de afluencia para los siguientes 30 días, con bandas de confianza del 80\% y 95\%.}\label{fig:predicciones}
 \end{figure}
 
 \begin{hallazgo}
-La proyeccion a corto plazo demuestra que el modelo captura exitosamente tanto la tendencia ascendente de recuperación como la ciclicidad operativa de la línea:
+La proyección a corto plazo muestra que el modelo captura tanto la tendencia de la serie como su ciclicidad semanal:
 
-\textbf{Respeto al ciclo semanal:} Las proyecciones replican de forma consistente las caídas recurrentes correspondientes a los días domingos y los repuntes a mitad de semana.
+**Respeto al ciclo semanal:** las proyecciones replican de forma consistente las caídas recurrentes de los domingos y los repuntes a mitad de semana.
 
-\textbf{Comportamiento de la demanda:} Los valores pronosticados oscilan de manera estable entre los rangos habituales observados durante el cierre del periodo de operación plena, validando la congruencia lógica del modelo.
+**Comportamiento de la demanda:** los valores pronosticados oscilan de manera estable dentro de los rangos habituales observados durante el período de operación plena, lo que respalda la congruencia del modelo.
 \end{hallazgo}
 
 \begin{notatecnica}
-Las bandas de pronóstico (representadas en el sombreado azul) se amplían de forma moderada conforme se extiende el horizonte temporal a 30 días. Esto refleja de manera matemática la incertidumbre acumulada propia de las proyecciones futuras, constituyendo un insumo valioso para que los planificadores evalúen escenarios esperados y establezcan con mayor seguridad las ventanas operativas de mantenimiento.
+Las bandas de pronóstico (80\% y 95\%) se amplían de forma moderada conforme se extiende el horizonte temporal a 30 días. Esto refleja la incertidumbre acumulada propia de las proyecciones futuras, un insumo valioso para que los planificadores evalúen escenarios y establezcan con mayor seguridad las ventanas operativas de mantenimiento.
 \end{notatecnica}
+
+\section{Conclusiones generales}\label{conclusiones-generales}
+
+El análisis de la afluencia de pasajeros de la Línea 12 del Metro nos permitió identificar patrones de comportamiento durante el periodo de operación con normalidad, de enero de 2024 a diciembre de 2025. Mediante la descomposición, las transformaciones y el ajuste de un modelo de series de tiempo, se obtuvieron los siguientes hallazgos:
+
+La demanda presenta una tendencia creciente y un patrón semanal definido. La afluencia aumenta a lo largo del periodo analizado, por lo que la demanda no se mantiene en un nivel constante. Además, existen diferencias importantes entre los días de la semana: el domingo registra el menor promedio, con aproximadamente 166 mil pasajeros, mientras que entre semana se observan promedios de entre 337 mil y 361 mil pasajeros. Esto confirma que el comportamiento de la demanda depende tanto del momento del periodo como del día de la semana.
+
+En cuanto a las transformaciones, la primera diferencia permitió observar los cambios diarios aun conservando las fluctuaciones propias del ciclo semanal; la diferencia estacional de periodo 7 redujo considerablemente esa variabilidad, su desviación estándar fue de aproximadamente 48 mil pasajeros, frente a 93 mil en la primera diferencia, esto indica que comparar cada día con el mismo día de la semana anterior permite retirar buena parte de las variaciones asociadas al calendario semanal.
+
+Los correlogramas y el ajuste SARIMA permitieron poder visualizar el pronóstico. En la serie original se observó una autocorrelación elevada en los rezagos correspondientes a semanas anteriores, lo que confirmó la presencia de un patrón semanal importante. Después de aplicar la diferencia estacional, la estructura de autocorrelación nos permitió plantear un modelo que incorporara componentes diarios y estacionales.
+
+La diferencia estacional de siete días resultó especialmente útil para reducir las variaciones relacionadas con el calendario, mientras que el modelo SARIMA permitió elaborar una proyección inicial para las semanas siguientes.
+
+El domingo representa una posible ventana para realizar trabajos de mantenimiento. Debido a que la afluencia dominical es considerablemente menor que la de los días laborales, programar algunas intervenciones durante ese día podría reducir la cantidad de usuarios afectados. Sin embargo, esta decisión también tendría que considerar las necesidades técnicas de cada intervención, su duración y las condiciones de operación del servicio. Por lo tanto, el patrón observado constituye un criterio de apoyo para la planeación, pero no una garantía de que cualquier mantenimiento deba realizarse en domingo. Así como también es importante considerar incertidumbre que estará presente en todas las series de tiempo y cabe destacar que en una ciudad grande y caótica como lo es la Ciudad de México y su periferia, hay mucho factores que pueden afectar inesperadamente la afluencia del metro.
 
 \end{document}
