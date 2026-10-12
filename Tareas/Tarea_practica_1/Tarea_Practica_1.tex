@@ -292,7 +292,7 @@
 
 \title{\titulo}
 \author{}
-\date{\vspace{-2.5em}2026-10-10}
+\date{\vspace{-2.5em}2026-10-11}
 
 \begin{document}
 \maketitle
@@ -584,5 +584,102 @@ En el rezago 1, ACF $\approx 0.37$ y PACF $\approx 0.37$; en los rezagos 2 y 3 l
 \end{notatecnica}
 
 Con este resultado, el equipo cuenta con una base concreta para la siguiente etapa del proyecto: ajustar y validar un modelo ARIMA sobre la serie de afluencia de la Línea 12.
+
+\section{Análisis e interpretación del ajuste de un ARIMA}\label{anuxe1lisis-e-interpretaciuxf3n-del-ajuste-de-un-arima}
+
+\subsection{Ajuste del modelo y validación de parámetros}\label{ajuste-del-modelo-y-validaciuxf3n-de-paruxe1metros}
+
+Tomando como base la estructura sugerida por los correlogramas de la serie diferenciada, se procedió a ajustar un modelo ARIMA utilizando la función \texttt{forecast::auto.arima()}, permitiendo una búsqueda automática informada por el componente estacional semanal de periodo 7.
+
+\begin{verbatim}
+## Series: serie_ts 
+## ARIMA(1,0,0)(1,1,0)[7] with drift 
+## 
+## Coefficients:
+##          ar1     sar1     drift
+##       0.4104  -0.4306   -1.4601
+## s.e.  0.0348   0.0353  259.6567
+## 
+## sigma^2 = 1.634e+09:  log likelihood = -8357.49
+## AIC=16722.97   AICc=16723.03   BIC=16741.15
+## 
+## Training set error measures:
+##                    ME     RMSE      MAE       MPE     MAPE      MASE
+## Training set 47.02801 40136.66 19564.25 -1.828182 7.687537 0.9136387
+##                     ACF1
+## Training set -0.02792859
+\end{verbatim}
+
+\begin{hallazgo}
+El modelo ajustado corresponde a SARIMA(1,0,0)(1,1,0)[7] con drift.
+Los coeficientes estimados fueron:
+
+AR(1) $\approx$ 0.41 (positivo y significativo).
+
+SAR(1) $\approx$ -0.43 (negativo, corrige choques en el ciclo semanal).
+
+Drift $\approx$ -1.46 (captura una ligera tendencia en la serie).
+El AIC=16722 y BIC=16741 confirman que el modelo es parsimonioso y adecuado.
+\end{hallazgo}
+
+\begin{notatecnica}
+El término drift representa una tendencia lineal en la serie diferenciada.
+La parte AR(1) indica dependencia con el día anterior.
+La parte SAR(1) refleja la relación con el mismo día de la semana previa.
+La diferencia estacional de orden 1 elimina el ciclo semanal, dejando residuos más cercanos a ruido blanco.
+\end{notatecnica}
+
+\subsection{Diagnóstico de residuos del modelo ajustado}\label{diagnuxf3stico-de-residuos-del-modelo-ajustado}
+
+Para asegurar la validez estadística del modelo ARIMA ajustado, es fundamental analizar sus residuos. Un buen modelo debe capturar toda la información sistemática de la serie, dejando en los residuos únicamente ``ruido blanco'' (un comportamiento aleatorio sin patrones).
+
+\begin{figure}
+
+{\centering \includegraphics{Tarea_Practica_1_files/figure-latex/diagnostico-residuos-1} 
+
+}
+
+\caption{Gráficas de diagnóstico de los residuos del modelo SARIMA.}\label{fig:diagnostico-residuos}
+\end{figure}
+\begin{hallazgo}
+El análisis visual de los residuos personalizados muestra características óptimas para dar por válido el ajuste del modelo:
+
+\textbf{Evolución temporal:} Los errores fluctúan de manera estable alrededor de cero, sin mostrar tendencias crecientes o decrecientes marcadas a lo largo del tiempo. Las unidades se expresan claramente en miles de pasajeros, facilitando su lectura cuantitativa.
+
+\textbf{Independencia (ACF):} Las autocorrelaciones de los residuos se encuentran prácticamente en su totalidad dentro de las bandas de confianza de color rojo, lo que indica que no queda información sistemática o patrones ocultos por explotar.
+
+\textbf{Distribución de errores:} El histograma muestra una campana centrada en cero que se aproxima adecuadamente a una distribución normal (curva roja), validando el cumplimiento de las hipótesis de normalidad en los errores del modelo.
+\end{hallazgo}
+
+La gráfica de residuos no muestra tendencias sistemáticas evidentes ni cambios drásticos en su variabilidad a lo largo del tiempo. Esto respalda la validez estadística del modelo ajustado para
+
+\section{Predicciones}\label{predicciones}
+
+\subsection{Proyección de la afluencia a corto plazo}\label{proyecciuxf3n-de-la-afluencia-a-corto-plazo}
+
+Utilizando el modelo ARIMA validado, es posible generar proyecciones de la afluencia diaria para las siguientes semanas, lo cual resulta de gran utilidad para anticipar la demanda de pasajeros.
+
+Proyeccion a 30 días:
+
+\begin{figure}
+
+{\centering \includegraphics{Tarea_Practica_1_files/figure-latex/predicciones-1} 
+
+}
+
+\caption{Pronóstico de afluencia para los siguientes 30 días.}\label{fig:predicciones}
+\end{figure}
+
+\begin{hallazgo}
+La proyeccion a corto plazo demuestra que el modelo captura exitosamente tanto la tendencia ascendente de recuperación como la ciclicidad operativa de la línea:
+
+\textbf{Respeto al ciclo semanal:} Las proyecciones replican de forma consistente las caídas recurrentes correspondientes a los días domingos y los repuntes a mitad de semana.
+
+\textbf{Comportamiento de la demanda:} Los valores pronosticados oscilan de manera estable entre los rangos habituales observados durante el cierre del periodo de operación plena, validando la congruencia lógica del modelo.
+\end{hallazgo}
+
+\begin{notatecnica}
+Las bandas de pronóstico (representadas en el sombreado azul) se amplían de forma moderada conforme se extiende el horizonte temporal a 30 días. Esto refleja de manera matemática la incertidumbre acumulada propia de las proyecciones futuras, constituyendo un insumo valioso para que los planificadores evalúen escenarios esperados y establezcan con mayor seguridad las ventanas operativas de mantenimiento.
+\end{notatecnica}
 
 \end{document}
