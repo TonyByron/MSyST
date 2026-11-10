@@ -260,11 +260,11 @@ mitad de la base habría fugado hacia el día
 `r num(mediana_dias, 0)`).
 
 La consecuencia directa para el negocio: esperar señales para retener no
-funciona con estos datos, así que la acción recomendada es un **ciclo universal de
-recuperación de clientes con calendario fijo** (contacto preventivo antes del día
-`r num(umbral_dias, 0)`, cuando la permanencia aún es del
-`r num(100 * p180)`%), más un **rediseño del registro de datos de los clientes**
-para que el siguiente análisis sí pueda detectar segmentos de riesgo.
+funciona con estos datos, así que la acción recomendada es un **ciclo de recuperación
+de clientes durante sus primeros `r round(umbral_dias / 30.4)` meses de inactividad** —
+antes del día `r num(umbral_dias, 0)` desde su última compra, cuando la permanencia
+aún es del `r num(100 * p180)`% —, más un **rediseño del registro de datos de los
+clientes** para que el siguiente análisis sí pueda detectar segmentos de riesgo.
 
 # Planteamiento del problema y propuesta
 
@@ -555,9 +555,11 @@ pocos.** Con `r num(100 * pct_churn)`% de fuga anual, sin segmentos
 distinguibles y con un riesgo que solo se acelera al final del año, un programa de retención dirigido a
 "clientes en riesgo" no tiene a dónde apuntar: las señales disponibles no
 anticipan nada. La modificación al producto que este análisis sostiene es un
-**ciclo de recuperación de clientes**: contacto preventivo a toda la base antes
-del día `r umbral_dias` (cuando la permanencia sigue en `r num(100 * p180)`%) — por
-ejemplo, incentivo de recompra y recordatorio de valor. La cadencia de
+**ciclo de recuperación de clientes durante sus primeros `r round(umbral_dias / 30.4)`
+meses de inactividad**: contacto preventivo a toda la base antes del día
+`r umbral_dias` desde su última compra (cuando la permanencia sigue en
+`r num(100 * p180)`%) — por ejemplo, incentivo de recompra y recordatorio de valor.
+La cadencia de
 repetición (p. ej. trimestral) es una decisión de implementación que este
 análisis no puede fijar con estos datos.
 
