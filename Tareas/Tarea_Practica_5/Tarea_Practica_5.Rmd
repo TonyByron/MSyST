@@ -156,8 +156,8 @@ datos$Estado             <- factor(ifelse(datos$Target_Churn, "Fugado", "Activo"
 # Números de limpieza
 num_clientes <- nrow(datos)
 num_vars     <- num_vars_crudas
-num_eventos  <- sum(datos$evento)
-pct_churn    <- mean(datos$evento)
+num_eventos  <- sum(datos$evento)        # numero de salidas
+pct_churn    <- mean(datos$evento)       # promedio de salidas
 dias_min     <- min(datos$tiempo)
 dias_max     <- max(datos$tiempo)
 ritmo_dia    <- num_eventos / dias_max   # fuga promedio por día de inactividad (clientes/día)
@@ -248,7 +248,7 @@ nombres_cortos <- c(
 
 # Introducción
 
-La empresa que nos contrató opera una tienda en línea y quiere saber qué
+Divvy opera la renta de bicicletas en línea y quiere saber qué
 modificación a su producto mejoraría la rentabilidad. El análisis de la
 información recolectada en el último año (`r num(num_clientes, 0)` clientes)
 arroja un hallazgo incómodo pero accionable: **ningún rasgo observable del
@@ -268,7 +268,8 @@ para que el siguiente análisis sí pueda detectar segmentos de riesgo.
 
 # Planteamiento del problema y propuesta
 
-La tienda vende en línea a clientes cuya actividad se mide por compras; el
+Divvy renta bicicletas a una base amplia de usuarios cuya actividad se mide
+por compras del servicio; el
 producto incluye promociones, atención a soporte y comunicación por correo. La
 dirección pregunta qué cambiar en el producto para retener más clientes: cada
 punto de retención preserva el ingreso que el cliente genera sin costo de

@@ -110,7 +110,7 @@
 % Identidad del documento: conservar estos comandos
 % ============================================================
 \newcommand{\materia}{Modelos de Supervivencia y Series de Tiempo}
-\newcommand{\TituloTarea}{Tarea Práctica 5}
+\newcommand{\TituloTarea}{Retención de clientes en Divvy}
 %\newcommand{\Tony}{\textsc{Anthonie Byron Ornelas Clement}}
 
 % Autores
@@ -135,12 +135,12 @@
 \newcommand{\titulo}{%
   \begin{tikzpicture}[remember picture, overlay]
     \fill[PortNavy] (current page.north west) rectangle ([yshift=-8.5cm]current page.north east);
-    \node[anchor=north west, text width=18.5cm] at ([xshift=1.6cm,yshift=-1.5cm]current page.north west) {
+    \node[anchor=north west, text width=17.8cm] at ([xshift=1.6cm,yshift=-1.5cm]current page.north west) {
       {\sffamily\fontsize{13}{16}\selectfont\color{white!75!PortNavy}INFORME EJECUTIVO DE RETENCIÓN}\\[0.45cm]
       {\sffamily\fontsize{36}{42}\selectfont\bfseries\color{white} \TituloTarea\\[0.3cm]
        \fontsize{15}{20}\selectfont\mdseries ¿Qué modificación al producto mejora la retención de clientes?}
     };
-    \node[anchor=north west, text width=19cm] at ([xshift=1.6cm,yshift=-9.6cm]current page.north west) {
+    \node[anchor=north west, text width=17.8cm] at ([xshift=1.6cm,yshift=-9.6cm]current page.north west) {
       {\sffamily\small\color{PortMuted}LO QUE ENCONTRAMOS EN 3 NÚMEROS}\\[0.35cm]
       \begin{tabular}{c}
         {\sffamily\fontsize{26}{30}\selectfont\bfseries\color{PortNavy}1,000}\\[-0.1cm]{\sffamily\footnotesize\color{PortMuted}clientes analizados}
@@ -154,8 +154,9 @@
       \begin{tabular}{c}
         {\sffamily\fontsize{26}{30}\selectfont\bfseries\color{PortAcento}0}\\[-0.1cm]{\sffamily\footnotesize\color{PortMuted}segmentos con señal}
       \end{tabular}\\[0.9cm]
-      {\sffamily\color{PortTeal}\rule{18.5cm}{1.6pt}}\\[0.35cm]
-      {\sffamily\small\color{PortNavy}\bfseries Decisión que este informe sostiene: ciclo de re-engagement universal antes del día 180 y re-instrumentación del registro.}\\[1.1cm]
+      {\sffamily\color{PortTeal}\rule{17.8cm}{1.6pt}}\\[0.35cm]
+      {\sffamily\small\color{PortNavy}\bfseries Decisión que este informe sostiene:}\\[0.15cm]
+      {\sffamily\small\color{PortNavy}ciclo de re-engagement universal antes del día 180 y re-instrumentación del registro.}\\[1.0cm]
       {\sffamily\color{PortNavy}\Autores}
     };
     \node[anchor=south east] at ([xshift=-1.4cm,yshift=1.2cm]current page.south east) {\includegraphics[height=2.4cm]{escudo0.png}};
@@ -299,7 +300,7 @@
 
 \section{Introducción}\label{introducciuxf3n}
 
-La empresa que nos contrató opera una tienda en línea y quiere saber qué
+Divvy opera la renta de bicicletas en línea y quiere saber qué
 modificación a su producto mejoraría la rentabilidad. El análisis de la
 información recolectada en el último año (1,000 clientes)
 arroja un hallazgo incómodo pero accionable: \textbf{ningún rasgo observable del
@@ -319,7 +320,8 @@ para que el siguiente análisis sí pueda detectar segmentos de riesgo.
 
 \section{Planteamiento del problema y propuesta}\label{planteamiento-del-problema-y-propuesta}
 
-La tienda vende en línea a clientes cuya actividad se mide por compras; el
+Divvy renta bicicletas a una base amplia de usuarios cuya actividad se mide
+por compras del servicio; el
 producto incluye promociones, atención a soporte y comunicación por correo. La
 dirección pregunta qué cambiar en el producto para retener más clientes: cada
 punto de retención preserva el ingreso que el cliente genera sin costo de
