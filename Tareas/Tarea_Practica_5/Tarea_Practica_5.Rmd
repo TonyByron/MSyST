@@ -80,83 +80,51 @@ tabla <- function(DataFrame, caption = NULL, anchos = NULL){
 
   m <- nrow(DataFrame)
 
-  a <- paste(rep("c", n), collapse = "")
-  if (!is.null(anchos)) a <- anchos
+  # La spec se construye sin barras: kableExtra triplica la spec de longtable
+  # cuando column_spec aplica bordes sobre anchos m{}/p{} (bug). El marco
+  # completo (borde izquierdo, separadores entre columnas, borde derecho) se
+  # inyecta abajo, directamente en la línea begin{longtable}.
+  a <- if (!is.null(anchos)) anchos else paste(rep("c", n), collapse = "")
 
-  if (n > 2){
+  k <- kbl(DataFrame,
+       booktabs = FALSE,
+       escape = FALSE,
+       format = "latex",
+       longtable = TRUE,
+       align = a,
+       caption = caption
+      ) %>%
 
-    kbl(DataFrame,
-         booktabs = FALSE,
-         escape = FALSE,
-         format = "latex",
-         longtable = TRUE,
-         align = a,
-         caption = caption
-        ) %>%
-
-      kable_styling(latex_options = c("hold_position"),
-                    position = "center",
-                    font_size = 10
-                   ) %>%
-
-      column_spec(1,
-                  border_left = TRUE,
-                  border_right = FALSE
+    kable_styling(latex_options = c("hold_position"),
+                  position = "center",
+                  font_size = 10
                  ) %>%
 
-      column_spec(2 : (n - 1),
-                  border_left = FALSE,
-                  border_right = FALSE
-                 ) %>%
+    row_spec(0,
+             background = col_encabezado,
+             color = "white",
+             bold = TRUE
+            ) %>%
 
-      column_spec(n,
-                  border_left = FALSE,
-                  border_right = TRUE
-                 ) %>%
+    row_spec(1:m, background = col_zebra)
 
-      row_spec(0,
-               background = col_encabezado,
-               color = "white",
-               bold = TRUE
-              ) %>%
-
-      row_spec(1:m, background = col_zebra)
-
-  } else{
-
-    kbl(DataFrame,
-         booktabs = FALSE,
-         escape = FALSE,
-         format = "latex",
-         longtable = TRUE,
-         align = a,
-         caption = caption
-        ) %>%
-
-      kable_styling(latex_options = c("hold_position"),
-                    position = "center",
-                    font_size = 10
-                   ) %>%
-
-      column_spec(1,
-                  border_left = TRUE,
-                  border_right = FALSE
-                 ) %>%
-
-      column_spec(n,
-                  border_left = FALSE,
-                  border_right = TRUE
-                 ) %>%
-
-      row_spec(0,
-               background = col_encabezado,
-               color = "white",
-               bold = TRUE
-              ) %>%
-
-      row_spec(1 : m, background = col_zebra)
-
+  # Marco completo + separadores de columna
+  espec <- if (!is.null(anchos)){
+    paste0("|", gsub("(?<=\\})\\s*(?=m|p)", "|", anchos, perl = TRUE), "|")
+  } else {
+    paste0("|", paste(rep("c", n), collapse = "|"), "|")
   }
+
+  k <- gsub("\\\\begin\\{longtable\\}\\[t\\]\\{(?:[^{}]|\\{[^{}]*\\})*\\}",
+            paste0("\\\\begin\\{longtable\\}[t]\\{", espec, "\\}"),
+            k, perl = TRUE)
+
+  # Repetir el encabezado en cada página de la tabla partida (\endhead)
+  k <- gsub(paste0("(\\\\cellcolor\\[HTML\\]\\{", substring(col_encabezado, 2),
+                   "\\}[^\\n]*\\\\\\\\)\\n"),
+            "\\1\\\\endhead\n", k, perl = TRUE)
+
+  k
 }
 
 # Formato de números para el texto

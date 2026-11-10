@@ -357,10 +357,10 @@ observaciones fuera de 1.5 rangos intercuartílicos (suma de extremos detectados
 
 \begingroup\fontsize{10}{12}\selectfont
 
-\begin{longtable}[t]{m{1.8cm}m{2.2cm}p{9.4cm}|m{1.8cm}m{2.2cm}p{9.4cm}|m{1.8cm}m{2.2cm}p{9.4cm}}
+\begin{longtable}[t]{|m{1.8cm}|m{2.2cm}|p{9.4cm}|}
 \caption{\label{tab:limpieza}Decisiones de limpieza y construcción de variables (antes → después).}\\
 \hline
-\cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Paso}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Decisión}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Detalle}}}\\
+\cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Paso}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Decisión}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Detalle}}}\\\endhead
 \hline
 \cellcolor[HTML]{F1FAEE}{Lectura} & \cellcolor[HTML]{F1FAEE}{CSV crudo → datos} & \cellcolor[HTML]{F1FAEE}{15 columnas tal como se reciben}\\
 \hline
@@ -509,10 +509,10 @@ válidas; lo que dicen es simplemente que no hay efectos.
 
 \begingroup\fontsize{10}{12}\selectfont
 
-\begin{longtable}[t]{|>{}c|>{}c|>{}c|>{}c|}
+\begin{longtable}[t]{|c|c|c|c|}
 \caption{\label{tab:cox-tabla}Modelo de Cox: hazard ratios (HR) por variable. HR > 1 aumenta el riesgo de fuga; ningún intervalo excluye al 1.0 (el de Gasto lo roza por arriba, p = 0.054) → ningún efecto detectable.}\\
 \hline
-\cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Variable}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{HR}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{IC}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{p}}}\\
+\cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Variable}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{HR}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{IC}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{p}}}\\\endhead
 \hline
 \cellcolor[HTML]{F1FAEE}{Edad} & \cellcolor[HTML]{F1FAEE}{1.000} & \cellcolor[HTML]{F1FAEE}{[0.9942, 1.0054]} & \cellcolor[HTML]{F1FAEE}{0.933}\\
 \hline
