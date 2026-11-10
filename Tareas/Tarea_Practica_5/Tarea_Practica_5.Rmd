@@ -255,52 +255,52 @@ arroja un hallazgo incómodo pero accionable: **ningún rasgo observable del
 cliente anticipa su fuga** — edad, ingreso, gasto, devoluciones, soporte,
 satisfacción y respuesta a promociones discriminan igual entre quienes abandonan
 y quienes no. El riesgo es de **`r num(100 * pct_churn)`% en el año, presente
-todo el año con aceleración al final** (según la curva de Kaplan–Meier, la
-mitad de la base habría fugado hacia el día
-`r num(mediana_dias, 0)`).
+todo el año con aceleración al final**.
 
 La consecuencia directa para el negocio: esperar señales para retener no
-funciona con estos datos, así que la acción recomendada es un **ciclo de recuperación
-de clientes durante sus primeros `r round(umbral_dias / 30.4)` meses de inactividad** —
+funciona con estos datos, así que la acción recomendada es un
+**ciclo de recuperación de clientes durante sus primeros `r round(umbral_dias / 30.4)` meses de inactividad** —
 antes del día `r num(umbral_dias, 0)` desde su última compra, cuando la permanencia
-aún es del `r num(100 * p180)`% —, más un **rediseño del registro de datos de los
-clientes** para que el siguiente análisis sí pueda detectar segmentos de riesgo.
+aún es del `r num(100 * p180)`% —,
+más un **rediseño del registro de datos de los clientes**
+para que el siguiente análisis sí pueda detectar segmentos de riesgo.
 
 # Planteamiento del problema y propuesta
 
 Divvy renta bicicletas a una base amplia de usuarios cuya actividad se mide
 por compras del servicio; el
-producto incluye promociones, atención a soporte y comunicación por correo. La
-dirección pregunta qué cambiar en el producto para retener más clientes: cada
-punto de retención preserva el ingreso que el cliente genera sin costo de
+servicio incluye promociones, atención a soporte y comunicación por correo.
+La dirección pregunta qué cambiar en el servicio para retener más clientes:
+cada punto de retención preserva el ingreso que el cliente genera sin costo de
 adquisición.
 
-En lugar de clasificar clientes como "fugados o no" al final del año, usamos
-**análisis de supervivencia**, que estudia *cuánto tarda en ocurrir un evento*.
-Aquí el evento es la fuga (el cliente marcado como abandonado) y el tiempo es
-la inactividad: los días transcurridos desde su última compra. Esta técnica
-aporta dos ventajas directas para decidir: entrega una **línea de tiempo del
-riesgo** (en qué días conviene actuar) y **compara grupos** (¿retiene más quien
-responde promociones?). Un cliente que no ha fugado al cierre del análisis
+Realizamos un **análisis de supervivencia**, que estudia
+*cuánto tarda en ocurrir un evento*. Aquí el evento es la *fuga*
+(el cliente marcado como abandonado) y el tiempo es la *inactividad*:
+los días transcurridos desde su última compra.
+Esta técnica aporta dos herramientas útiles para decidir:
+
+* Una **línea de tiempo del riesgo** (en qué días conviene actuar).
+* Una **comparación entre grupos** (¿retiene más quien responde promociones?).
+
+Un cliente que no ha fugado al cierre del análisis
 simplemente aporta la información de que sobrevivió hasta su último registro
 (censura); no se le descarta.
 
 Las preguntas que organiza el análisis:
 
-1. ¿En qué momento del año se concentra la fuga? (timing de la acción.)
+1. ¿En qué momento del año se concentra la fuga? (momento del evento.)
 2. ¿Algún segmento de clientes fuga más rápido que otro? (¿a quién apuntar?)
-3. ¿Las promociones y el soporte están asociados con la retención? (¿qué
-   modificar del producto?)
+3. ¿Las promociones y el soporte están asociados con la retención? (¿qué modificar del servicio?)
 
 # La base y su limpieza
 
-La base tiene `r num(num_clientes, 0)` clientes y `r num_vars` variables (identificador,
-perfil demográfico y económico, comportamiento de compra y abandono). La
-inspección y las decisiones se resumen en la Tabla \@ref(tab:limpieza); **no se
-eliminó ningún cliente** y ninguna variable requirió imputación o truncado: no
-hay duplicados, no hay perdidos y ninguna de las `r length(outliers)` variables numéricas tiene
-observaciones fuera de 1.5 rangos intercuartílicos (suma de extremos detectados:
-`r num(sum(outliers), 0)`; Figura \@ref(fig:extremos)).
+La base tiene `r num(num_clientes, 0)` clientes y `r num_vars` variables
+(identificador, perfil demográfico y económico, comportamiento de compra y abandono).
+La Tabla \@ref(tab:limpieza) documenta cada decisión de limpieza: la base llegó
+limpia — sin duplicados, perdidos ni extremos (Figura \@ref(fig:extremos)) — y
+**no se eliminó ningún cliente**. Solo cuatro variables requieren construcción
+explícita, y son las que definen el análisis:
 
 ```{r limpieza}
 # Tabla resumen de transformaciones (antes -> después) =================================================================

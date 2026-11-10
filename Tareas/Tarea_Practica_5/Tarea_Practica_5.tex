@@ -304,33 +304,40 @@ arroja un hallazgo incómodo pero accionable: \textbf{ningún rasgo observable d
 cliente anticipa su fuga} --- edad, ingreso, gasto, devoluciones, soporte,
 satisfacción y respuesta a promociones discriminan igual entre quienes abandonan
 y quienes no. El riesgo es de \textbf{52.6\% en el año, presente
-todo el año con aceleración al final} (según la curva de Kaplan--Meier, la
-mitad de la base habría fugado hacia el día
-269).
+todo el año con aceleración al final}.
 
 La consecuencia directa para el negocio: esperar señales para retener no
-funciona con estos datos, así que la acción recomendada es un \textbf{ciclo de recuperación
-de clientes durante sus primeros 6 meses de inactividad} ---
+funciona con estos datos, así que la acción recomendada es un
+\textbf{ciclo de recuperación de clientes durante sus primeros 6 meses de inactividad} ---
 antes del día 180 desde su última compra, cuando la permanencia
-aún es del 70.4\% ---, más un \textbf{rediseño del registro de datos de los
-clientes} para que el siguiente análisis sí pueda detectar segmentos de riesgo.
+aún es del 70.4\% ---,
+más un \textbf{rediseño del registro de datos de los clientes}
+para que el siguiente análisis sí pueda detectar segmentos de riesgo.
 
 \section{Planteamiento del problema y propuesta}\label{planteamiento-del-problema-y-propuesta}
 
 Divvy renta bicicletas a una base amplia de usuarios cuya actividad se mide
 por compras del servicio; el
-producto incluye promociones, atención a soporte y comunicación por correo. La
-dirección pregunta qué cambiar en el producto para retener más clientes: cada
-punto de retención preserva el ingreso que el cliente genera sin costo de
+servicio incluye promociones, atención a soporte y comunicación por correo.
+La dirección pregunta qué cambiar en el servicio para retener más clientes:
+cada punto de retención preserva el ingreso que el cliente genera sin costo de
 adquisición.
 
-En lugar de clasificar clientes como ``fugados o no'' al final del año, usamos
-\textbf{análisis de supervivencia}, que estudia \emph{cuánto tarda en ocurrir un evento}.
-Aquí el evento es la fuga (el cliente marcado como abandonado) y el tiempo es
-la inactividad: los días transcurridos desde su última compra. Esta técnica
-aporta dos ventajas directas para decidir: entrega una \textbf{línea de tiempo del
-riesgo} (en qué días conviene actuar) y \textbf{compara grupos} (¿retiene más quien
-responde promociones?). Un cliente que no ha fugado al cierre del análisis
+Realizamos un \textbf{análisis de supervivencia}, que estudia
+\emph{cuánto tarda en ocurrir un evento}. Aquí el evento es la \emph{fuga}
+(el cliente marcado como abandonado) y el tiempo es la \emph{inactividad}:
+los días transcurridos desde su última compra.
+Esta técnica aporta dos herramientas útiles para decidir:
+
+\begin{itemize}
+\tightlist
+\item
+  Una \textbf{línea de tiempo del riesgo} (en qué días conviene actuar).
+\item
+  Una \textbf{comparación entre grupos} (¿retiene más quien responde promociones?).
+\end{itemize}
+
+Un cliente que no ha fugado al cierre del análisis
 simplemente aporta la información de que sobrevivió hasta su último registro
 (censura); no se le descarta.
 
@@ -340,23 +347,21 @@ Las preguntas que organiza el análisis:
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  ¿En qué momento del año se concentra la fuga? (timing de la acción.)
+  ¿En qué momento del año se concentra la fuga? (momento del evento.)
 \item
   ¿Algún segmento de clientes fuga más rápido que otro? (¿a quién apuntar?)
 \item
-  ¿Las promociones y el soporte están asociados con la retención? (¿qué
-  modificar del producto?)
+  ¿Las promociones y el soporte están asociados con la retención? (¿qué modificar del servicio?)
 \end{enumerate}
 
 \section{La base y su limpieza}\label{la-base-y-su-limpieza}
 
-La base tiene 1,000 clientes y 15 variables (identificador,
-perfil demográfico y económico, comportamiento de compra y abandono). La
-inspección y las decisiones se resumen en la Tabla \ref{tab:limpieza}; \textbf{no se
-eliminó ningún cliente} y ninguna variable requirió imputación o truncado: no
-hay duplicados, no hay perdidos y ninguna de las 10 variables numéricas tiene
-observaciones fuera de 1.5 rangos intercuartílicos (suma de extremos detectados:
-0; Figura \ref{fig:extremos}).
+La base tiene 1,000 clientes y 15 variables
+(identificador, perfil demográfico y económico, comportamiento de compra y abandono).
+La Tabla \ref{tab:limpieza} documenta cada decisión de limpieza: la base llegó
+limpia --- sin duplicados, perdidos ni extremos (Figura \ref{fig:extremos}) --- y
+\textbf{no se eliminó ningún cliente}. Solo cuatro variables requieren construcción
+explícita, y son las que definen el análisis:
 
 \begingroup\fontsize{10}{12}\selectfont
 
