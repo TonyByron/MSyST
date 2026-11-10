@@ -376,7 +376,7 @@ p_antiguedad <- ggplot(datos, aes(Years_as_Customer)) +
 # Estilo A: caja neutra + cada cliente como punto coloreado por su estado
 p_caja_spend <- ggplot(datos, aes(Estado, Total_Spend)) +
   geom_boxplot(outlier.shape = NA, fill = "white", color = col_neutro, width = 0.55) +
-  geom_jitter(aes(color = Estado), width = 0.16, size = 1.4, alpha = 0.55) +
+  geom_jitter(aes(color = Estado), width = 0.14, size = 0.75, alpha = 0.4, shape = 16) +
   scale_color_manual(values = colores_churn) +
   scale_y_continuous(labels = label_comma()) +
   labs(title = "Gasto total anual", y = "USD", x = NULL) +
@@ -384,14 +384,14 @@ p_caja_spend <- ggplot(datos, aes(Estado, Total_Spend)) +
 
 p_caja_compras <- ggplot(datos, aes(Estado, Num_of_Purchases)) +
   geom_boxplot(outlier.shape = NA, fill = "white", color = col_neutro, width = 0.55) +
-  geom_jitter(aes(color = Estado), width = 0.16, size = 1.4, alpha = 0.55) +
+  geom_jitter(aes(color = Estado), width = 0.14, size = 0.75, alpha = 0.4, shape = 16) +
   scale_color_manual(values = colores_churn) +
   labs(title = "Compras al año", y = "Compras", x = NULL) +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
 p_caja_trans <- ggplot(datos, aes(Estado, Average_Transaction_Amount)) +
   geom_boxplot(outlier.shape = NA, fill = "white", color = col_neutro, width = 0.55) +
-  geom_jitter(aes(color = Estado), width = 0.16, size = 1.4, alpha = 0.55) +
+  geom_jitter(aes(color = Estado), width = 0.14, size = 0.75, alpha = 0.4, shape = 16) +
   scale_color_manual(values = colores_churn) +
   scale_y_continuous(labels = label_comma()) +
   labs(title = "Transacción promedio", y = "USD", x = NULL) +
@@ -399,7 +399,7 @@ p_caja_trans <- ggplot(datos, aes(Estado, Average_Transaction_Amount)) +
 
 p_caja_dias <- ggplot(datos, aes(Estado, Last_Purchase_Days_Ago)) +
   geom_boxplot(outlier.shape = NA, fill = "white", color = col_neutro, width = 0.55) +
-  geom_jitter(aes(color = Estado), width = 0.16, size = 1.4, alpha = 0.55) +
+  geom_jitter(aes(color = Estado), width = 0.14, size = 0.75, alpha = 0.4, shape = 16) +
   scale_color_manual(values = colores_churn) +
   labs(title = "Días desde la última compra", y = "Días", x = NULL) +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
