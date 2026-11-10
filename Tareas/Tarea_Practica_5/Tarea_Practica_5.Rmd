@@ -370,31 +370,42 @@ p_antiguedad <- ggplot(datos, aes(Years_as_Customer)) +
   plot_annotation(theme = tema_reporte)
 ```
 
-```{r extremos, fig.cap="Diagramas de caja del comportamiento de compra: no hay valores extremos fuera de 1.5×IQR en ninguna variable; no se requirió truncado ni winsorización.", fig.width=6.4, fig.height=3.6}
+```{r extremos, fig.cap="Diagramas de caja con cada cliente como punto, coloreado por su estado (rojo = fugado, verde = activo): no hay valores extremos fuera de 1.5×IQR en ninguna variable; no se requirió truncado ni winsorización.", fig.width=6.4, fig.height=3.8}
 # Figura 2: cajas de comportamiento (detección de extremos) ============================================================
-p_caja_spend <- ggplot(datos, aes(y = Total_Spend)) +
-  geom_boxplot(fill = col_neutro, color = col_neutro) +
+# Estilo A: caja neutra + cada cliente como punto coloreado por su estado
+p_caja_spend <- ggplot(datos, aes(Estado, Total_Spend)) +
+  geom_boxplot(outlier.shape = NA, fill = "white", color = col_neutro, width = 0.55) +
+  geom_jitter(aes(color = Estado), width = 0.16, size = 1.4, alpha = 0.55) +
+  scale_color_manual(values = colores_churn) +
   scale_y_continuous(labels = label_comma()) +
   labs(title = "Gasto total anual", y = "USD", x = NULL) +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
-p_caja_compras <- ggplot(datos, aes(y = Num_of_Purchases)) +
-  geom_boxplot(fill = col_neutro, color = col_neutro) +
+p_caja_compras <- ggplot(datos, aes(Estado, Num_of_Purchases)) +
+  geom_boxplot(outlier.shape = NA, fill = "white", color = col_neutro, width = 0.55) +
+  geom_jitter(aes(color = Estado), width = 0.16, size = 1.4, alpha = 0.55) +
+  scale_color_manual(values = colores_churn) +
   labs(title = "Compras al año", y = "Compras", x = NULL) +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
-p_caja_trans <- ggplot(datos, aes(y = Average_Transaction_Amount)) +
-  geom_boxplot(fill = col_neutro, color = col_neutro) +
+p_caja_trans <- ggplot(datos, aes(Estado, Average_Transaction_Amount)) +
+  geom_boxplot(outlier.shape = NA, fill = "white", color = col_neutro, width = 0.55) +
+  geom_jitter(aes(color = Estado), width = 0.16, size = 1.4, alpha = 0.55) +
+  scale_color_manual(values = colores_churn) +
+  scale_y_continuous(labels = label_comma()) +
   labs(title = "Transacción promedio", y = "USD", x = NULL) +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
-p_caja_dias <- ggplot(datos, aes(y = Last_Purchase_Days_Ago)) +
-  geom_boxplot(fill = col_acento, color = col_acento) +
+p_caja_dias <- ggplot(datos, aes(Estado, Last_Purchase_Days_Ago)) +
+  geom_boxplot(outlier.shape = NA, fill = "white", color = col_neutro, width = 0.55) +
+  geom_jitter(aes(color = Estado), width = 0.16, size = 1.4, alpha = 0.55) +
+  scale_color_manual(values = colores_churn) +
   labs(title = "Días desde la última compra", y = "Días", x = NULL) +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
 (p_caja_spend + p_caja_compras) / (p_caja_trans + p_caja_dias) +
-  plot_annotation(theme = tema_reporte)
+  plot_layout(guides = "collect") &
+  theme(legend.position = "top")
 ```
 
 Las variables numéricas entre sí prácticamente no se correlacionan

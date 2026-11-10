@@ -16,6 +16,7 @@
 
 \usepackage{varios}
 \usepackage{needspace}  % evita que tablas cortas se partan entre páginas
+\usepackage{tikz}       % portada ejecutiva (bloques y KPIs)
 \graphicspath{{plantilla/}}
 % ------------------------------------------------------------------
 % Paleta Línea 12 (Línea Dorada) — sobrescribe los colores UNAM.
@@ -42,44 +43,55 @@
 % ============================================================
 \newcommand{\materia}{Modelos de Supervivencia y Series de Tiempo}
 \newcommand{\TituloTarea}{Tarea Práctica 5}
-\newcommand{\Tony}{\textsc{Anthonie Byron Ornelas Clement}}
+%\newcommand{\Tony}{\textsc{Anthonie Byron Ornelas Clement}}
+
+% Autores
+\newcommand{\Autores}{
+    \textsc{Aguirre Garcia Abraham Isaias}\\
+    \textsc{Castillo C\'ordoba Alfa Cecilia}\\
+    \textsc{Larios Huitron Michelle}\\
+    \textsc{Ornelas Clement Anthonie Byron}
+}
 
 % ============================================================
-% Portada
+% Portada (opción 2 — reporte de decisión con KPIs)
+% NOTA: las cifras de los KPIs provienen del análisis del Rmd;
+% si la base o el modelo cambian, sincronizarlas a mano aquí.
 % ============================================================
-
-
+\definecolor{PortNavy}{HTML}{264653}
+\definecolor{PortTeal}{HTML}{2A9D8F}
+\definecolor{PortFuga}{HTML}{E63946}
+\definecolor{PortAcento}{HTML}{F77F00}
+\definecolor{PortMuted}{HTML}{65727A}
 
 \newcommand{\titulo}{%
-  \begin{minipage}{0.93\textwidth}
-    \vspace{0.6cm}
-    \begin{center}
-      \IfFileExists{escudo.png}{%
-        \includegraphics[height=7cm]{escudo.png}\par\vspace{0.55cm}
-      }{%
-        \IfFileExists{escudo0.png}{%
-          \includegraphics[height=7cm]{escudo0.png}\par\vspace{0.55cm}
-        }{}
-      }
-      {\sffamily\small\bfseries FACULTAD DE CIENCIAS\par}
-      \vspace{0.12cm}
-      {\sffamily\footnotesize\color{UNAMMuted}\materia\par}
-      \vspace{0.75cm}
-        \colorbox{UNAMBlue}{\parbox{0.82\textwidth}{%
-        \centering
-        \vspace{0.22cm}
-        {\sffamily\color{white}\bfseries\fontsize{24}{29}\selectfont \TituloTarea\par}
-        \vspace{0.22cm}
-      }}
-      \par\vspace{0.3cm}
-      \textcolor{UNAMAccent}{\rule{4.5cm}{1pt}}\par
-      \vfill
-      %{\sffamily\small\bfseries \Tony\par}
-      \vspace{0.3cm}
-      {\large \Tony \par}
-      \date{\today}
-    \end{center}
-  \end{minipage}%
+  \begin{tikzpicture}[remember picture, overlay]
+    \fill[PortNavy] (current page.north west) rectangle ([yshift=-8.5cm]current page.north east);
+    \node[anchor=north west, text width=18.5cm] at ([xshift=1.6cm,yshift=-1.5cm]current page.north west) {
+      {\sffamily\fontsize{13}{16}\selectfont\color{white!75!PortNavy}INFORME EJECUTIVO DE RETENCIÓN}\\[0.45cm]
+      {\sffamily\fontsize{36}{42}\selectfont\bfseries\color{white} \TituloTarea\\[0.3cm]
+       \fontsize{15}{20}\selectfont\mdseries ¿Qué modificación al producto mejora la retención de clientes?}
+    };
+    \node[anchor=north west, text width=19cm] at ([xshift=1.6cm,yshift=-9.6cm]current page.north west) {
+      {\sffamily\small\color{PortMuted}LO QUE ENCONTRAMOS EN 3 NÚMEROS}\\[0.35cm]
+      \begin{tabular}{c}
+        {\sffamily\fontsize{26}{30}\selectfont\bfseries\color{PortNavy}1,000}\\[-0.1cm]{\sffamily\footnotesize\color{PortMuted}clientes analizados}
+      \end{tabular}\hspace{1.6cm}
+      \begin{tabular}{c}
+        {\sffamily\fontsize{26}{30}\selectfont\bfseries\color{PortFuga}52.6\%}\\[-0.1cm]{\sffamily\footnotesize\color{PortMuted}de fuga en el año}
+      \end{tabular}\hspace{1.6cm}
+      \begin{tabular}{c}
+        {\sffamily\fontsize{26}{30}\selectfont\bfseries\color{PortTeal}269 días}\\[-0.1cm]{\sffamily\footnotesize\color{PortMuted}mediana de fuga}
+      \end{tabular}\hspace{1.6cm}
+      \begin{tabular}{c}
+        {\sffamily\fontsize{26}{30}\selectfont\bfseries\color{PortAcento}0}\\[-0.1cm]{\sffamily\footnotesize\color{PortMuted}segmentos con señal}
+      \end{tabular}\\[0.9cm]
+      {\sffamily\color{PortTeal}\rule{18.5cm}{1.6pt}}\\[0.35cm]
+      {\sffamily\small\color{PortNavy}\bfseries Decisión que este informe sostiene: ciclo de re-engagement universal antes del día 180 y re-instrumentación del registro.}\\[1.1cm]
+      {\sffamily\color{PortNavy}\Autores}
+    };
+    \node[anchor=south east] at ([xshift=-1.4cm,yshift=1.2cm]current page.south east) {\includegraphics[height=2.4cm]{escudo0.png}};
+  \end{tikzpicture}%
 }
 
 % ============================================================
