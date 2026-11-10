@@ -69,32 +69,94 @@ tema_reporte <- theme_minimal(base_size = 10) +
 
 theme_set(tema_reporte)
 
-# Formato común de las tablas (kableExtra) con la paleta del reporte
+# Formato común de las tablas (kableExtra) — diseño de la compañera, restaurado:
+# marco vertical completo (column_spec con border_left/right en primera y última
+# columna, según las dos ramas originales), longtable, font_size 10 y los colores
+# como variables de la paleta (para que la elección siga centralizada). Extra:
+# parámetro `anchos` para columnas de ancho fijo (lo requiere la Tabla 1).
 tabla <- function(DataFrame, caption = NULL, anchos = NULL){
 
   n <- ncol(DataFrame)
+
   m <- nrow(DataFrame)
+
   a <- paste(rep("c", n), collapse = "")
   if (!is.null(anchos)) a <- anchos
 
-  kbl(DataFrame,
-       booktabs     = FALSE,
-       escape       = FALSE,
-       format       = "latex",
-       longtable    = FALSE,
-       align        = a,
-       caption      = caption
-      ) %>%
-    kable_styling(latex_options = c("hold_position"),
-                  position      = "center",
-                  font_size     = 9
+  if (n > 2){
+
+    kbl(DataFrame,
+         booktabs = FALSE,
+         escape = FALSE,
+         format = "latex",
+         longtable = TRUE,
+         align = a,
+         caption = caption
+        ) %>%
+
+      kable_styling(latex_options = c("hold_position"),
+                    position = "center",
+                    font_size = 10
+                   ) %>%
+
+      column_spec(1,
+                  border_left = TRUE,
+                  border_right = FALSE
                  ) %>%
-    row_spec(0,
-             background = col_encabezado,
-             color      = "white",
-             bold       = TRUE
-            ) %>%
-    row_spec(1:m, background = col_zebra)
+
+      column_spec(2 : (n - 1),
+                  border_left = FALSE,
+                  border_right = FALSE
+                 ) %>%
+
+      column_spec(n,
+                  border_left = FALSE,
+                  border_right = TRUE
+                 ) %>%
+
+      row_spec(0,
+               background = col_encabezado,
+               color = "white",
+               bold = TRUE
+              ) %>%
+
+      row_spec(1:m, background = col_zebra)
+
+  } else{
+
+    kbl(DataFrame,
+         booktabs = FALSE,
+         escape = FALSE,
+         format = "latex",
+         longtable = TRUE,
+         align = a,
+         caption = caption
+        ) %>%
+
+      kable_styling(latex_options = c("hold_position"),
+                    position = "center",
+                    font_size = 10
+                   ) %>%
+
+      column_spec(1,
+                  border_left = TRUE,
+                  border_right = FALSE
+                 ) %>%
+
+      column_spec(n,
+                  border_left = FALSE,
+                  border_right = TRUE
+                 ) %>%
+
+      row_spec(0,
+               background = col_encabezado,
+               color = "white",
+               bold = TRUE
+              ) %>%
+
+      row_spec(1 : m, background = col_zebra)
+
+  }
 }
 
 # Formato de números para el texto

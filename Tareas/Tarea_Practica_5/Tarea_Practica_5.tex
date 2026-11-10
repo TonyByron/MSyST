@@ -110,7 +110,15 @@
 % ============================================================
 \newcommand{\materia}{Modelos de Supervivencia y Series de Tiempo}
 \newcommand{\TituloTarea}{Tarea Práctica 5}
-\newcommand{\Tony}{\textsc{Anthonie Byron Ornelas Clement}}
+%\newcommand{\Tony}{\textsc{Anthonie Byron Ornelas Clement}}
+
+% Autores
+\newcommand{\Autores}{
+    \textsc{Aguirre Garcia Abraham Isaias}\\
+    \textsc{Castillo C\'ordoba Alfa Cecilia}\\
+    \textsc{Larios Huitron Michelle}\\
+    \textsc{Ornelas Clement Anthonie Byron}
+}
 
 % ============================================================
 % Portada
@@ -144,7 +152,7 @@
       \vfill
       %{\sffamily\small\bfseries \Tony\par}
       \vspace{0.3cm}
-      {\large \Tony \par}
+      {\large \Autores \par}
       \date{\today}
     \end{center}
   \end{minipage}%
@@ -347,12 +355,10 @@ hay duplicados, no hay perdidos y ninguna de las 10 variables numéricas tiene
 observaciones fuera de 1.5 rangos intercuartílicos (suma de extremos detectados:
 0; Figura \ref{fig:extremos}).
 
-\begin{table}[!h]
-\centering
-\caption{\label{tab:limpieza}Decisiones de limpieza y construcción de variables (antes → después).}
-\centering
-\fontsize{9}{11}\selectfont
-\begin{tabular}[t]{m{1.8cm}m{2.2cm}p{9.4cm}|m{1.8cm}m{2.2cm}p{9.4cm}|m{1.8cm}m{2.2cm}p{9.4cm}}
+\begingroup\fontsize{10}{12}\selectfont
+
+\begin{longtable}[t]{m{1.8cm}m{2.2cm}p{9.4cm}|m{1.8cm}m{2.2cm}p{9.4cm}|m{1.8cm}m{2.2cm}p{9.4cm}}
+\caption{\label{tab:limpieza}Decisiones de limpieza y construcción de variables (antes → después).}\\
 \hline
 \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Paso}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Decisión}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Detalle}}}\\
 \hline
@@ -372,8 +378,8 @@ observaciones fuera de 1.5 rangos intercuartílicos (suma de extremos detectados
 \hline
 \cellcolor[HTML]{F1FAEE}{Satisfacción} & \cellcolor[HTML]{F1FAEE}{Agrupación} & \cellcolor[HTML]{F1FAEE}{Satisfaction\_Score 1–2 → «Baja» (394); 3–5 → «Alta» (606)}\\
 \hline
-\end{tabular}
-\end{table}
+\end{longtable}
+\endgroup{}
 
 La construcción del \textbf{par de supervivencia} merece nota explícita: el \emph{evento}
 es \texttt{Target\_Churn} (1 = fugado) y el \emph{tiempo} es \texttt{Last\_Purchase\_Days\_Ago}
@@ -501,12 +507,10 @@ en el tiempo (supuesto del modelo); \textbf{no se detecta violación del supuest
 (prueba global p = 0.77), de modo que las estimaciones son
 válidas; lo que dicen es simplemente que no hay efectos.
 
-\begin{table}[!h]
-\centering
-\caption{\label{tab:cox-tabla}Modelo de Cox: hazard ratios (HR) por variable. HR > 1 aumenta el riesgo de fuga; ningún intervalo excluye al 1.0 (el de Gasto lo roza por arriba, p = 0.054) → ningún efecto detectable.}
-\centering
-\fontsize{9}{11}\selectfont
-\begin{tabular}[t]{c|c|c|c}
+\begingroup\fontsize{10}{12}\selectfont
+
+\begin{longtable}[t]{|>{}c|>{}c|>{}c|>{}c|}
+\caption{\label{tab:cox-tabla}Modelo de Cox: hazard ratios (HR) por variable. HR > 1 aumenta el riesgo de fuga; ningún intervalo excluye al 1.0 (el de Gasto lo roza por arriba, p = 0.054) → ningún efecto detectable.}\\
 \hline
 \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Variable}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{HR}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{IC}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{p}}}\\
 \hline
@@ -534,8 +538,8 @@ válidas; lo que dicen es simplemente que no hay efectos.
 \hline
 \cellcolor[HTML]{F1FAEE}{Canceló promo (vs ignoró)} & \cellcolor[HTML]{F1FAEE}{0.938} & \cellcolor[HTML]{F1FAEE}{[0.7565, 1.1623]} & \cellcolor[HTML]{F1FAEE}{0.557}\\
 \hline
-\end{tabular}
-\end{table}
+\end{longtable}
+\endgroup{}
 
 \section{Qué implica esto para el negocio}\label{quuxe9-implica-esto-para-el-negocio}
 
