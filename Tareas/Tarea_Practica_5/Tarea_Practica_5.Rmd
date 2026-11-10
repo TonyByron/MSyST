@@ -249,7 +249,7 @@ nombres_cortos <- c(
 # Introducción
 
 Divvy opera la renta de bicicletas en línea y quiere saber qué
-modificación a su producto mejoraría la rentabilidad. El análisis de la
+modificación a su servicio mejoraría la rentabilidad. El análisis de la
 información recolectada en el último año (`r num(num_clientes, 0)` clientes)
 arroja un hallazgo incómodo pero accionable: **ningún rasgo observable del
 cliente anticipa su fuga** — edad, ingreso, gasto, devoluciones, soporte,
@@ -260,10 +260,10 @@ mitad de la base habría fugado hacia el día
 `r num(mediana_dias, 0)`).
 
 La consecuencia directa para el negocio: esperar señales para retener no
-funciona con estos datos, así que la acción recomendada es un **ciclo de
-re-engagement universal y calendario fijo** (contacto preventivo antes del día
+funciona con estos datos, así que la acción recomendada es un **ciclo universal de
+recuperación de clientes con calendario fijo** (contacto preventivo antes del día
 `r num(umbral_dias, 0)`, cuando la permanencia aún es del
-`r num(100 * p180)`%), más una **re-instrumentación del registro de clientes**
+`r num(100 * p180)`%), más un **rediseño del registro de datos de los clientes**
 para que el siguiente análisis sí pueda detectar segmentos de riesgo.
 
 # Planteamiento del problema y propuesta
@@ -555,7 +555,7 @@ pocos.** Con `r num(100 * pct_churn)`% de fuga anual, sin segmentos
 distinguibles y con un riesgo que solo se acelera al final del año, un programa de retención dirigido a
 "clientes en riesgo" no tiene a dónde apuntar: las señales disponibles no
 anticipan nada. La modificación al producto que este análisis sostiene es un
-**ciclo de re-engagement universal**: contacto preventivo a toda la base antes
+**ciclo de recuperación de clientes**: contacto preventivo a toda la base antes
 del día `r umbral_dias` (cuando la permanencia sigue en `r num(100 * p180)`%) — por
 ejemplo, incentivo de recompra y recordatorio de valor. La cadencia de
 repetición (p. ej. trimestral) es una decisión de implementación que este
@@ -569,7 +569,7 @@ y quienes cancelaron su suscripción a la campaña
 invertir más en la campaña, hay que rediseñarla para que sea capaz de mover la
 retención.
 
-**3. Re-instrumentar el registro de clientes es la modificación de mayor valor
+**3. Mejorar el registro de datos de los clientes es la modificación de mayor valor
 a largo plazo.** Este análisis se limita por cómo se capturó la información: no
 hay fecha de alta, ni historial de compras fechado, ni fecha de baja — solo un
 corte de "días desde la última compra" y una marca final de abandono. Registrar

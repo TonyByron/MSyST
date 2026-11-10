@@ -152,8 +152,8 @@
         {\sffamily\fontsize{26}{30}\selectfont\bfseries\color{PortTeal}269 días}\\[-0.1cm]{\sffamily\footnotesize\color{PortMuted}mediana de fuga}
       \end{tabular}\\[0.9cm]
       {\sffamily\color{PortTeal}\rule{17.8cm}{1.6pt}}\\[0.35cm]
-      {\sffamily\small\color{PortNavy}\bfseries Decisión que este informe sostiene:}\\[-0.15cm]
-      {\sffamily\small\color{PortNavy}ciclo de re-engagement universal antes del día 180 y re-instrumentación del registro.}\\[1.0cm]
+      {\sffamily\small\color{PortNavy}\bfseries Decisión que este informe sostiene:}\\[-3mm]
+      {\sffamily\small\color{PortNavy}ciclo de recuperación de clientes antes del día 180 y un rediseño del registro de datos.}\\[1.0cm]
       {\sffamily\color{PortNavy}\Autores}
     };
     \node[anchor=south east] at ([xshift=-1.4cm,yshift=1.2cm]current page.south east) {\includegraphics[height=2.4cm]{escudo0.png}};
@@ -298,7 +298,7 @@
 \section{Introducción}\label{introducciuxf3n}
 
 Divvy opera la renta de bicicletas en línea y quiere saber qué
-modificación a su producto mejoraría la rentabilidad. El análisis de la
+modificación a su servicio mejoraría la rentabilidad. El análisis de la
 información recolectada en el último año (1,000 clientes)
 arroja un hallazgo incómodo pero accionable: \textbf{ningún rasgo observable del
 cliente anticipa su fuga} --- edad, ingreso, gasto, devoluciones, soporte,
@@ -309,10 +309,10 @@ mitad de la base habría fugado hacia el día
 269).
 
 La consecuencia directa para el negocio: esperar señales para retener no
-funciona con estos datos, así que la acción recomendada es un \textbf{ciclo de
-re-engagement universal y calendario fijo} (contacto preventivo antes del día
+funciona con estos datos, así que la acción recomendada es un \textbf{ciclo universal de
+recuperación de clientes con calendario fijo} (contacto preventivo antes del día
 180, cuando la permanencia aún es del
-70.4\%), más una \textbf{re-instrumentación del registro de clientes}
+70.4\%), más un \textbf{rediseño del registro de datos de los clientes}
 para que el siguiente análisis sí pueda detectar segmentos de riesgo.
 
 \section{Planteamiento del problema y propuesta}\label{planteamiento-del-problema-y-propuesta}
@@ -551,7 +551,7 @@ pocos.} Con 52.6\% de fuga anual, sin segmentos
 distinguibles y con un riesgo que solo se acelera al final del año, un programa de retención dirigido a
 ``clientes en riesgo'' no tiene a dónde apuntar: las señales disponibles no
 anticipan nada. La modificación al producto que este análisis sostiene es un
-\textbf{ciclo de re-engagement universal}: contacto preventivo a toda la base antes
+\textbf{ciclo de recuperación de clientes}: contacto preventivo a toda la base antes
 del día 180 (cuando la permanencia sigue en 70.4\%) --- por
 ejemplo, incentivo de recompra y recordatorio de valor. La cadencia de
 repetición (p.~ej. trimestral) es una decisión de implementación que este
@@ -565,7 +565,7 @@ y quienes cancelaron su suscripción a la campaña
 invertir más en la campaña, hay que rediseñarla para que sea capaz de mover la
 retención.
 
-\textbf{3. Re-instrumentar el registro de clientes es la modificación de mayor valor
+\textbf{3. Mejorar el registro de datos de los clientes es la modificación de mayor valor
 a largo plazo.} Este análisis se limita por cómo se capturó la información: no
 hay fecha de alta, ni historial de compras fechado, ni fecha de baja --- solo un
 corte de ``días desde la última compra'' y una marca final de abandono. Registrar
