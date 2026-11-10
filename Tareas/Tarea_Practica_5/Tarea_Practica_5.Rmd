@@ -104,6 +104,7 @@ num <- function(x, digits = 1) formatC(x, format = "f", digits = digits, big.mar
 ```{r datos, include=FALSE}
 # Lectura única de la base (Data/ no se modifica) ======================================================================
 datos <- read.csv("Data/online_retail_customer_churn.csv")
+num_vars_crudas <- ncol(datos)   # variables del CSV original, antes de construir columnas derivadas
 ```
 
 ```{r preparacion, include=FALSE}
@@ -124,6 +125,7 @@ datos$Estado             <- factor(ifelse(datos$Target_Churn, "Fugado", "Activo"
 
 # Números de limpieza
 num_clientes <- nrow(datos)
+num_vars     <- num_vars_crudas
 num_eventos  <- sum(datos$evento)
 pct_churn    <- mean(datos$evento)
 dias_min     <- min(datos$tiempo)
@@ -131,6 +133,8 @@ dias_max     <- max(datos$tiempo)
 ritmo_dia    <- num_eventos / dias_max   # fuga promedio por día de inactividad (clientes/día)
 n_baja       <- sum(datos$satisfaccion_grupo == "Baja")
 n_alta      <- sum(datos$satisfaccion_grupo == "Alta")
+n_duplicados <- sum(duplicated(datos))
+n_perdidos   <- sum(is.na(datos))
 
 # Rangos del perfil para el texto (sin números a mano)
 edad_rango   <- range(datos$Age)
@@ -142,7 +146,7 @@ trans_rango  <- range(datos$Average_Transaction_Amount)
 
 # Resumen de género (proporciones)
 props_genero <- prop.table(table(datos$Gender))
-outliers     <- sapply(select(datos, where(is.numeric)), function(x){
+outliers     <- sapply(select(datos, where(is.numeric), -Customer_ID, -evento, -tiempo), function(x){
   q <- quantile(x, c(.25, .75)); sum(x < q[1] - 1.5 * (q[2] - q[1]) | x > q[2] + 1.5 * (q[2] - q[1]))
 })
 
@@ -190,7 +194,7 @@ nombres <- c("Edad", "Ingreso anual (miles USD)", "Gasto por cada 1,000 USD",
 tabla_cox_fmt <- data.frame(
   Variable = nombres,
   HR       = formatC(hr_tbl, format = "f", digits = 3),
-  IC       = sprintf("[%.3f, %.3f]", ic_tbl[, 1], ic_tbl[, 2]),
+  IC       = sprintf("[%.4f, %.4f]", ic_tbl[, 1], ic_tbl[, 2]),
   p        = formatC(cf[, 5], format = "f", digits = 3)
 )
 rownames(tabla_cox_fmt) <- NULL
@@ -259,11 +263,11 @@ Las preguntas que organiza el análisis:
 
 # La base y su limpieza
 
-La base tiene `r num(num_clientes, 0)` clientes y 15 variables (identificador,
+La base tiene `r num(num_clientes, 0)` clientes y `r num_vars` variables (identificador,
 perfil demográfico y económico, comportamiento de compra y abandono). La
 inspección y las decisiones se resumen en la Tabla \@ref(tab:limpieza); **no se
 eliminó ningún cliente** y ninguna variable requirió imputación o truncado: no
-hay duplicados, no hay perdidos y ninguna de las 10 variables numéricas tiene
+hay duplicados, no hay perdidos y ninguna de las `r length(outliers)` variables numéricas tiene
 observaciones fuera de 1.5 rangos intercuartílicos (suma de extremos detectados:
 `r num(sum(outliers), 0)`; Figura \@ref(fig:extremos)).
 
@@ -274,10 +278,10 @@ transformaciones <- data.frame(
                "Categóricas", "Evento", "Tiempo", "Satisfacción"),
   Decisión = c("CSV crudo → datos", "Verificación", "Verificación", "Verificación",
                "Recodificación", "Construcción", "Construcción", "Agrupación"),
-  Detalle  = c("15 columnas tal como se reciben",
-               "0 duplicados → sin acción",
-               "0 perdidos → sin imputación",
-               paste0("0 fuera de 1.5×IQR en las 10 numéricas → sin truncado"),
+  Detalle  = c(paste0(num(num_vars, 0), " columnas tal como se reciben"),
+               paste0(num(n_duplicados, 0), " duplicados → sin acción"),
+               paste0(num(n_perdidos, 0), " perdidos → sin imputación"),
+               paste0(num(sum(outliers), 0), " fuera de 1.5×IQR en las ", length(outliers), " numéricas → sin truncado"),
                "Gender y Promotion\\_Response a factor; Email\\_Opt\\_In y Target\\_Churn de texto «True/False» a lógico",
                sprintf("Target\\_Churn → evento (1 fuga, 0 retención): %s fugas (%s\\%%)",
                        num(num_eventos, 0), num(100 * pct_churn)),
@@ -324,11 +328,12 @@ p_ingreso <- ggplot(datos, aes(Annual_Income)) +
 p_genero <- ggplot(datos, aes(Gender, fill = Gender)) +
   geom_bar(color = "white") +
   scale_fill_manual(values = colores_perfil) +
+  scale_x_discrete(labels = c("Female" = "Mujer", "Male" = "Hombre", "Other" = "Otro")) +
   labs(title = "Género", x = NULL, y = "Clientes") +
   theme(legend.position = "none")
 
 p_antiguedad <- ggplot(datos, aes(Years_as_Customer)) +
-  geom_histogram(bins = 19, fill = col_retencion, color = "white") +
+  geom_histogram(bins = 19, fill = col_neutro, color = "white") +
   labs(title = "Antigüedad", x = "Años como cliente", y = "Clientes")
 
 (p_edad + p_ingreso) / (p_genero + p_antiguedad) +
@@ -377,7 +382,7 @@ dimnames(correlacion) <- lapply(dimnames(correlacion), function(x) ifelse(is.na(
 as.data.frame(as.table(correlacion)) %>%
   ggplot(aes(Var1, Var2, fill = Freq)) +
   geom_tile(color = "white") +
-  scale_fill_gradient2(low = col_retencion, mid = "white", high = col_fuga,
+  scale_fill_gradient2(low = "#7B6D8D", mid = "white", high = "#E9C46A",
                        limits = c(-1, 1), name = "r") +
   labs(x = NULL, y = NULL) +
   theme_minimal(base_size = 9) +
@@ -437,7 +442,7 @@ inactividad) y no un cambio de comportamiento.
 
 ```{r km-global, fig.cap=paste0("Kaplan–Meier global: la permanencia cae de manera pareja la mayor parte del año y se acelera al final (cola de inactividad); la mitad de la base habría fugado hacia el día ", num(mediana_dias, 0), ". La acción de retención debe activarse antes del día ", num(umbral_dias, 0), "."), fig.width=5.6, fig.height=4}
 # Figura 5: curva global con tabla de riesgo ===========================================================================
-ggsurvplot(km_global,
+km_fig <- ggsurvplot(km_global,
            conf.int   = TRUE,
            risk.table = TRUE,
            palette    = col_retencion,
@@ -447,9 +452,13 @@ ggsurvplot(km_global,
            legend.title = "",
            risk.table.title = "Clientes en riesgo",
            risk.table.y.text = FALSE,
+           tables.y.text = FALSE,
            surv.median.line = "none",
            ggtheme      = tema_reporte,
            tables.theme = tema_reporte + theme(plot.title = element_text(face = "bold", size = 9)))
+km_fig$table <- km_fig$table + ylab(NULL) +  # sin eje-y en la tabla: elimina la key residual de survminer
+  theme(axis.text.y.left = element_blank(), axis.title.y = element_blank())
+km_fig
 ```
 
 Las comparaciones por segmento (Figura \@ref(fig:km-segmentos)) confirman la
@@ -473,9 +482,9 @@ g_sat <- ggsurvplot(km_sat, data = datos, pval = TRUE,
 g_prom <- ggsurvplot(km_prom, data = datos, pval = TRUE,
                      palette = colores_segmentos,
                      xlab = "Días", ylab = NULL,
-                     legend.labs = c("Ignoró promo", "Respondió", "Canceló suscripción"),
+                     legend.labs = c("Ignoró promo", "Respondió", "Canceló\nsuscripción"),
                      ggtheme = tema_reporte)$plot +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom", legend.text = element_text(size = 7.5, lineheight = 0.9))
 
 g_sat + g_prom
 ```
@@ -494,7 +503,7 @@ válidas; lo que dicen es simplemente que no hay efectos.
 ```{r cox-tabla}
 # Tabla del modelo de Cox (HR legibles) ================================================================================
 tabla(tabla_cox_fmt,
-      caption = "Modelo de Cox: hazard ratios (HR) por variable. HR > 1 aumenta el riesgo de fuga; ningún intervalo excluye al 1.0 (el de Gasto lo roza por arriba, p = 0.054) → ningún efecto detectable.")
+      caption = paste0("Modelo de Cox: hazard ratios (HR) por variable. HR > 1 aumenta el riesgo de fuga; ningún intervalo excluye al 1.0 (el de Gasto lo roza por arriba, p = ", num(cox_min_p, 3), ") → ningún efecto detectable."))
 ```
 
 # Qué implica esto para el negocio
