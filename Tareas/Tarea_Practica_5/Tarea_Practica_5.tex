@@ -1,0 +1,568 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+  10pt,
+  titlepage]{article}
+\usepackage{xcolor}
+\usepackage[a4paper, includeheadfoot, margin=2.54cm]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\usepackage{caption}
+\captionsetup[table]{skip=6pt}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+% ============================================================
+% Preambulo moderno para Tarea Práctica 1
+% Basado en la plantilla original del autor.
+% Se conservan las interfaces: \materia, \TituloTarea, \Tony y \titulo.
+% ============================================================
+
+% Asegura que los .sty locales se encuentren dentro de la carpeta plantilla/
+\makeatletter
+%\def\input@path{{plantilla/}}
+\makeatother
+
+\usepackage{fontspec}      % Si no lo tienes, añádelo antes de babel
+\usepackage[spanish,es-tabla,activeacute]{babel}
+\selectlanguage{spanish}
+\spanishdecimal{.}
+
+\usepackage{varios}
+\usepackage{needspace}  % evita que tablas cortas se partan entre páginas
+\graphicspath{{plantilla/}}
+% ------------------------------------------------------------------
+% Paleta Línea 12 (Línea Dorada) — sobrescribe los colores UNAM.
+% Todo lo que ya usa estos nombres (portada, secciones, cajas,
+% hipervínculos) hereda el dorado automáticamente.
+% ------------------------------------------------------------------
+\definecolor{UNAMBlue}{HTML}{006199}        % dorado principal
+\definecolor{UNAMAccent}{HTML}{8A6A16}      % dorado oscuro (contraste)
+\definecolor{UNAMLightBlue}{HTML}{F3E7C6}   % fondo claro dorado
+\definecolor{UNAMLightAccent}{HTML}{EAD6A0} % fondo claro dorado oscuro
+\definecolor{UNAMMuted}{HTML}{5B5B5B}       % gris neutro, sin cambio
+\definecolor{UNAMText}{HTML}{262626}        % texto principal
+\definecolor{UNAMLightGray}{HTML}{FBF9F4}   % blanco hueso
+
+% Matemáticas modernas para XeLaTeX
+\usepackage{unicode-math}
+\setmathfont{TeX Gyre Termes Math}
+
+\renewcommand{\labelitemi}{$\bullet$}
+\renewcommand{\labelitemii}{$\circ$}
+
+% ============================================================
+% Identidad del documento: conservar estos comandos
+% ============================================================
+\newcommand{\materia}{Modelos de Supervivencia y Series de Tiempo}
+\newcommand{\TituloTarea}{Tarea Practica 5}
+\newcommand{\Tony}{\textsc{Anthonie Byron Ornelas Clement}}
+
+% ============================================================
+% Portada
+% ============================================================
+
+
+
+\newcommand{\titulo}{%
+  \begin{minipage}{0.93\textwidth}
+    \vspace{0.6cm}
+    \begin{center}
+      \IfFileExists{escudo.png}{%
+        \includegraphics[height=7cm]{escudo.png}\par\vspace{0.55cm}
+      }{%
+        \IfFileExists{escudo0.png}{%
+          \includegraphics[height=7cm]{escudo0.png}\par\vspace{0.55cm}
+        }{}
+      }
+      {\sffamily\small\bfseries FACULTAD DE CIENCIAS\par}
+      \vspace{0.12cm}
+      {\sffamily\footnotesize\color{UNAMMuted}\materia\par}
+      \vspace{0.75cm}
+        \colorbox{UNAMBlue}{\parbox{0.82\textwidth}{%
+        \centering
+        \vspace{0.22cm}
+        {\sffamily\color{white}\bfseries\fontsize{24}{29}\selectfont \TituloTarea\par}
+        \vspace{0.22cm}
+      }}
+      \par\vspace{0.3cm}
+      \textcolor{UNAMAccent}{\rule{4.5cm}{1pt}}\par
+      \vfill
+      %{\sffamily\small\bfseries \Tony\par}
+      \vspace{0.3cm}
+      {\large \Tony \par}
+      \date{\today}
+    \end{center}
+  \end{minipage}%
+}
+
+% ============================================================
+% Ajustes visuales generales
+% ============================================================
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+
+% Hyperref lo administra Pandoc/R Markdown. Solo configuramos al inicio.
+\makeatletter
+\AtBeginDocument{%
+  \@ifpackageloaded{hyperref}{%
+    \hypersetup{
+      colorlinks=true,
+      linkcolor=UNAMBlue,
+      urlcolor=UNAMBlue,
+      citecolor=UNAMBlue
+    }
+  }{}
+}
+\makeatother
+
+% Títulos
+\usepackage{titlesec}
+\titleformat{\section}
+  {\sffamily\Large\bfseries\color{UNAMBlue}}
+  {\thesection}{0.65em}{}
+  [\vspace{0.18em}\color{UNAMAccent}\titlerule]
+
+\titleformat{\subsection}
+  {\sffamily\large\bfseries\color{UNAMText}}
+  {\thesubsection}{0.6em}{}
+
+\titleformat{\subsubsection}
+  {\sffamily\normalsize\bfseries\color{UNAMBlue}}
+  {\thesubsubsection}{0.55em}{}
+
+% Figuras
+\captionsetup{
+  font=small,
+  labelfont={bf,color=UNAMBlue},
+  textfont={color=UNAMMuted},
+  justification=centering,
+  skip=7pt
+}
+
+% ============================================================
+% Entornos de comunicación para el Rmd
+% ============================================================
+\newtcolorbox{queobservar}{%
+  enhanced,
+  breakable,
+  colback=UNAMLightBlue,
+  colframe=UNAMBlue,
+  boxrule=0pt,
+  leftrule=3pt,
+  arc=2pt,
+  left=8pt,right=8pt,top=7pt,bottom=7pt,
+  before skip=8pt,after skip=10pt,
+  fonttitle=\sffamily\bfseries,
+  title=¿Qué debemos observar?%
+}
+
+\newtcolorbox{notatecnica}{%
+  enhanced,
+  breakable,
+  colback=UNAMLightGray,
+  colframe=UNAMMuted,
+  boxrule=0pt,
+  leftrule=3pt,
+  arc=2pt,
+  left=8pt,right=8pt,top=7pt,bottom=7pt,
+  before skip=8pt,after skip=10pt,
+  fonttitle=\sffamily\bfseries,
+  title=Nota técnica%
+}
+
+\newtcolorbox{hallazgo}{%
+  enhanced,
+  breakable,
+  colback=UNAMLightAccent,
+  colframe=UNAMAccent,
+  boxrule=0pt,
+  leftrule=4pt,
+  arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=8pt,
+  before skip=9pt,after skip=11pt,
+  fonttitle=\sffamily\bfseries,
+  title=Hallazgo principal%
+}
+
+
+\newtcolorbox{citadestacada}{%
+  enhanced,
+  breakable,
+  colback=white,
+  colframe=UNAMBlue,
+  boxrule=0pt,
+  leftrule=2.4pt,
+  arc=0pt,
+  left=12pt,right=10pt,top=6pt,bottom=6pt,
+  before skip=8pt,after skip=10pt,
+  fontupper=\itshape\color{UNAMText}
+}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabularx}
+\usepackage{xltabular}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{\titulo}
+\author{}
+\date{\vspace{-2.5em}}
+
+\begin{document}
+\maketitle
+
+\section{Introducción}\label{introducciuxf3n}
+
+La empresa que nos contrató opera una tienda en línea y quiere saber qué
+modificación a su producto mejoraría la rentabilidad. El análisis de la
+información recolectada en el último año (1,000 clientes)
+arroja un hallazgo incómodo pero accionable: \textbf{ningún rasgo observable del
+cliente anticipa su fuga} --- edad, ingreso, gasto, devoluciones, soporte,
+satisfacción y respuesta a promociones discriminan igual entre quienes abandonan
+y quienes no. El riesgo es de \textbf{52.6\% en el año, presente
+todo el año con aceleración al final} (la mitad de la fuga acumulada ocurre
+alrededor del día
+269).
+
+La consecuencia directa para el negocio: esperar señales para retener no
+funciona con estos datos, así que la acción recomendada es un \textbf{ciclo de
+re-engagement universal y calendario fijo} (contacto preventivo antes del día
+180, cuando la permanencia aún es del
+70.4\%), más una \textbf{re-instrumentación del registro de clientes}
+para que el siguiente análisis sí pueda detectar segmentos de riesgo.
+
+\section{Planteamiento del problema y propuesta}\label{planteamiento-del-problema-y-propuesta}
+
+La tienda vende en línea a clientes cuya actividad se mide por compras; el
+producto incluye promociones, atención a soporte y comunicación por correo. La
+dirección pregunta qué cambiar en el producto para retener más clientes: cada
+punto de retención preserva el ingreso que el cliente genera sin costo de
+adquisición.
+
+En lugar de clasificar clientes como ``fugados o no'' al final del año, usamos
+\textbf{análisis de supervivencia}, que estudia \emph{cuánto tarda en ocurrir un evento}.
+Aquí el evento es la fuga (el cliente marcado como abandonado) y el tiempo es
+la inactividad: los días transcurridos desde su última compra. Esta técnica
+aporta dos ventajas directas para decidir: entrega una \textbf{línea de tiempo del
+riesgo} (en qué días conviene actuar) y \textbf{compara grupos} (¿retiene más quien
+responde promociones?). Un cliente que no ha fugado al cierre del análisis
+simplemente aporta la información de que sobrevivió hasta su último registro
+(censura); no se le descarta.
+
+Las preguntas que organiza el análisis:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  ¿En qué momento del año se concentra la fuga? (timing de la acción.)
+\item
+  ¿Algún segmento de clientes fuga más rápido que otro? (¿a quién apuntar?)
+\item
+  ¿Las promociones y el soporte están asociados con la retención? (¿qué
+  modificar del producto?)
+\end{enumerate}
+
+\section{La base y su limpieza}\label{la-base-y-su-limpieza}
+
+La base tiene 1,000 clientes y 15 variables (identificador,
+perfil demográfico y económico, comportamiento de compra y abandono). La
+inspección y las decisiones se resumen en la Tabla \ref{tab:limpieza}; \textbf{no se
+eliminó ningún cliente} y ninguna variable requirió imputación o truncado: no
+hay duplicados, no hay perdidos y ninguna de las 10 variables numéricas tiene
+observaciones fuera de 1.5 rangos intercuartílicos (suma de extremos detectados:
+0; Figura \ref{fig:extremos}).
+
+\begin{table}[!h]
+\centering
+\caption{\label{tab:limpieza}Decisiones de limpieza y construcción de variables (antes → después).}
+\centering
+\fontsize{9}{11}\selectfont
+\begin{tabular}[t]{m{1.8cm}m{2.2cm}p{9.4cm}|m{1.8cm}m{2.2cm}p{9.4cm}|m{1.8cm}m{2.2cm}p{9.4cm}}
+\hline
+\cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Paso}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Decisión}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Detalle}}}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Lectura} & \cellcolor[HTML]{F1FAEE}{CSV crudo → datos} & \cellcolor[HTML]{F1FAEE}{15 columnas tal como se reciben}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Duplicados} & \cellcolor[HTML]{F1FAEE}{Verificación} & \cellcolor[HTML]{F1FAEE}{0 duplicados → sin acción}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Perdidos} & \cellcolor[HTML]{F1FAEE}{Verificación} & \cellcolor[HTML]{F1FAEE}{0 perdidos → sin imputación}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Extremos} & \cellcolor[HTML]{F1FAEE}{Verificación} & \cellcolor[HTML]{F1FAEE}{0 fuera de 1.5×IQR en las 10 numéricas → sin truncado}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Categóricas} & \cellcolor[HTML]{F1FAEE}{Recodificación} & \cellcolor[HTML]{F1FAEE}{Gender y Promotion\_Response a factor; Email\_Opt\_In y Target\_Churn de texto «True/False» a lógico}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Evento} & \cellcolor[HTML]{F1FAEE}{Construcción} & \cellcolor[HTML]{F1FAEE}{Target\_Churn → evento (1 fuga, 0 retención): 526 fugas (52.6\%)}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Tiempo} & \cellcolor[HTML]{F1FAEE}{Construcción} & \cellcolor[HTML]{F1FAEE}{Last\_Purchase\_Days\_Ago → días de inactividad (1–364)}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Satisfacción} & \cellcolor[HTML]{F1FAEE}{Agrupación} & \cellcolor[HTML]{F1FAEE}{Satisfaction\_Score 1–2 → «Baja» (394); 3–5 → «Alta» (606)}\\
+\hline
+\end{tabular}
+\end{table}
+
+La construcción del \textbf{par de supervivencia} merece nota explícita: el \emph{evento}
+es \texttt{Target\_Churn} (1 = fugado) y el \emph{tiempo} es \texttt{Last\_Purchase\_Days\_Ago}
+(inactividad al cierre del año). Los clientes sin fuga quedan \textbf{censurados}:
+sabemos que seguían activos hasta su última compra, entre los días
+1 y 364 del año, pero no su vida completa.
+La limitación que esto impone --- la fuga se mide contra la última compra y no
+contra una fecha de baja declarada --- se retoma en las conclusiones.
+
+\section{¿Quiénes son y cómo compran? (exploración)}\label{quiuxe9nes-son-y-cuxf3mo-compran-exploraciuxf3n}
+
+El perfil del cliente es amplio y balanceado: edades de 18 a 69 años, ingresos
+anuales de 20 a 200 miles de dólares, antigüedad de 1 a 19 años y género
+repartido en tres tercios (Figura \ref{fig:perfil}). El comportamiento de
+compra es igualmente disperso y sin valores extremos: de 1 a 99 compras al año,
+gasto total de 109 a 9,999 dólares y transacciones promedio de 10 a 500
+dólares (Figura \ref{fig:extremos}).
+
+\begin{figure}
+
+{\centering \includegraphics{Tarea_Practica_5_files/figure-latex/perfil-1} 
+
+}
+
+\caption{Perfil de los clientes: ninguna característica demográfica concentra a la base; el público es heterogéneo y balanceado.}\label{fig:perfil}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics{Tarea_Practica_5_files/figure-latex/extremos-1} 
+
+}
+
+\caption{Diagramas de caja del comportamiento de compra: no hay valores extremos fuera de 1.5×IQR en ninguna variable; no se requirió truncado ni winsorización.}\label{fig:extremos}
+\end{figure}
+
+Las variables numéricas entre sí prácticamente no se correlacionan
+(Figura \ref{fig:correlaciones}): no existe un ``cliente grande'' (mucho ingreso
+y mucho gasto, muchas compras) ni combinaciones de variables que agrupen a la
+base. Esta primera señal --- la base no tiene segmentos naturales --- anticipa el
+hallazgo central del análisis de supervivencia.
+
+\begin{figure}
+
+{\centering \includegraphics{Tarea_Practica_5_files/figure-latex/correlaciones-1} 
+
+}
+
+\caption{Correlaciones entre variables numéricas: todas cercanas a cero; la base no tiene segmentos naturales.}\label{fig:correlaciones}
+\end{figure}
+
+\section{¿Qué distingue a quien fuga? (comparación inicial)}\label{quuxe9-distingue-a-quien-fuga-comparaciuxf3n-inicial}
+
+Al cruzar cada variable con el abandono (Figura \ref{fig:churn-rel}) no
+aparece ningún contraste: la distribución de satisfacción, contactos a soporte
+y devoluciones es la misma entre fugados y activos, y la respuesta a
+promociones se reparte igual en ambos grupos. La fracción de fuga oscila
+\textbf{sin tendencia entre 48.3\% y
+60.8\%} en todas las ventanas del año.
+
+\begin{figure}
+
+{\centering \includegraphics{Tarea_Practica_5_files/figure-latex/churn-rel-1} 
+
+}
+
+\caption{Fuga frente a satisfacción, soporte y promociones: las distribuciones de fugados (rojo) y activos (verde) son indistinguibles en toda variable.}\label{fig:churn-rel}
+\end{figure}
+
+\section{¿Cuándo se van los clientes? (análisis de supervivencia)}\label{cuuxe1ndo-se-van-los-clientes-anuxe1lisis-de-supervivencia}
+
+La curva de Kaplan--Meier global (Figura \ref{fig:km-global}) responde la
+primera pregunta: la fuga \textbf{no se concentra en ningún periodo}. El abandono se
+acumula a un ritmo promedio de 1.45 clientes por día: el
+riesgo es plano durante la mayor parte del año y se acelera al final, en la
+cola de la distribución de inactividad (Figura
+\ref{fig:km-global}). La permanencia es del
+94.9\% al día 30, 85.9\% al día 90 y
+70.4\% al día 180; la mediana de ``sobrevivencia'' es de
+269 días (IC 95\%: 255--283),
+es decir, la mitad de la fuga anual ocurre alrededor de los 9 meses de
+inactividad.
+
+\begin{figure}
+
+{\centering \includegraphics{Tarea_Practica_5_files/figure-latex/km-global-1} 
+
+}
+
+\caption{Kaplan–Meier global: la permanencia cae de manera pareja la mayor parte del año y se acelera al final (cola de inactividad); la mitad de la fuga acumulada ocurre cerca del día 269. La acción de retención debe activarse antes del día 180.}\label{fig:km-global}
+\end{figure}
+
+Las comparaciones por segmento (Figura \ref{fig:km-segmentos}) confirman la
+segunda pregunta: las curvas de satisfacción baja (394 clientes)
+y alta (606) se traslapan, con prueba log-rank
+p = 0.230; lo mismo ocurre entre quienes respondieron, ignoraron
+o se dieron de baja de las promociones (p = 0.509). Ninguna
+diferencia es estadísticamente detectable.
+
+\begin{figure}
+
+{\centering \includegraphics{Tarea_Practica_5_files/figure-latex/km-segmentos-1} 
+
+}
+
+\caption{Permanencia según satisfacción y respuesta a promociones: las curvas se traslapan (log-rank p=0.23 y p=0.51); ningún segmento retiene mejor que otro.}\label{fig:km-segmentos}
+\end{figure}
+
+Para ponderar todas las variables a la vez, ajustamos el modelo de Cox, que
+estima cuánto multiplica cada característica el riesgo de fuga manteniendo el
+resto constante (Tabla \ref{tab:cox-tabla}). La lectura ejecutiva de la tabla:
+\textbf{ningún hazard ratio se aleja de 1.0 con confianza} --- el intervalo de cada
+variable incluye al 1.0 --- y la significancia más cercana (gasto total,
+p = 0.05) no alcanza el umbral convencional de 0.05. El
+supuesto de riesgos proporcionales se verifica (prueba global
+p = 0.77), de modo que las estimaciones son válidas; lo que
+dicen es simplemente que no hay efectos.
+
+\begin{table}[!h]
+\centering
+\caption{\label{tab:cox-tabla}Modelo de Cox: hazard ratios (HR) por variable. HR > 1 aumenta el riesgo de fuga; todo intervalo contiene al 1.0 → ningún efecto detectable.}
+\centering
+\fontsize{9}{11}\selectfont
+\begin{tabular}[t]{c|c|c|c}
+\hline
+\cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Variable}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{HR}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{IC}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{p}}}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Edad} & \cellcolor[HTML]{F1FAEE}{1.000} & \cellcolor[HTML]{F1FAEE}{[0.994, 1.005]} & \cellcolor[HTML]{F1FAEE}{0.933}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Ingreso anual (miles USD)} & \cellcolor[HTML]{F1FAEE}{0.998} & \cellcolor[HTML]{F1FAEE}{[0.997, 1.000]} & \cellcolor[HTML]{F1FAEE}{0.064}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Gasto total (USD)} & \cellcolor[HTML]{F1FAEE}{1.000} & \cellcolor[HTML]{F1FAEE}{[1.000, 1.000]} & \cellcolor[HTML]{F1FAEE}{0.054}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Antigüedad (años)} & \cellcolor[HTML]{F1FAEE}{0.992} & \cellcolor[HTML]{F1FAEE}{[0.977, 1.008]} & \cellcolor[HTML]{F1FAEE}{0.323}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Compras al año} & \cellcolor[HTML]{F1FAEE}{1.000} & \cellcolor[HTML]{F1FAEE}{[0.997, 1.003]} & \cellcolor[HTML]{F1FAEE}{0.795}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Transacción promedio (USD)} & \cellcolor[HTML]{F1FAEE}{1.000} & \cellcolor[HTML]{F1FAEE}{[0.999, 1.000]} & \cellcolor[HTML]{F1FAEE}{0.251}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Devoluciones} & \cellcolor[HTML]{F1FAEE}{0.987} & \cellcolor[HTML]{F1FAEE}{[0.958, 1.017]} & \cellcolor[HTML]{F1FAEE}{0.389}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Contactos a soporte} & \cellcolor[HTML]{F1FAEE}{1.031} & \cellcolor[HTML]{F1FAEE}{[0.970, 1.096]} & \cellcolor[HTML]{F1FAEE}{0.332}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Satisfacción (1–5)} & \cellcolor[HTML]{F1FAEE}{1.000} & \cellcolor[HTML]{F1FAEE}{[0.940, 1.064]} & \cellcolor[HTML]{F1FAEE}{0.997}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Aceptó correos (sí vs no)} & \cellcolor[HTML]{F1FAEE}{0.932} & \cellcolor[HTML]{F1FAEE}{[0.784, 1.108]} & \cellcolor[HTML]{F1FAEE}{0.425}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Respondió promo (vs ignoró)} & \cellcolor[HTML]{F1FAEE}{1.045} & \cellcolor[HTML]{F1FAEE}{[0.842, 1.297]} & \cellcolor[HTML]{F1FAEE}{0.691}\\
+\hline
+\cellcolor[HTML]{F1FAEE}{Canceló promo (vs ignoró)} & \cellcolor[HTML]{F1FAEE}{0.938} & \cellcolor[HTML]{F1FAEE}{[0.757, 1.162]} & \cellcolor[HTML]{F1FAEE}{0.557}\\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Qué implica esto para el negocio}\label{quuxe9-implica-esto-para-el-negocio}
+
+\textbf{1. El riesgo es plano y alto: retener requiere actuar a todos, no a unos
+pocos.} Con 52.6\% de fuga anual, sin segmentos
+distinguibles y con un riesgo que solo se acelera al final del año, un programa de retención dirigido a
+``clientes en riesgo'' no tiene a dónde apuntar: las señales disponibles no
+anticipan nada. La modificación al producto que este análisis sostiene es un
+\textbf{ciclo de re-engagement universal}: contacto preventivo a toda la base antes
+del día 180 (cuando la permanencia sigue en 70.4\%) --- por
+ejemplo, incentivo de recompra y recordatorio de valor --- repetido
+trimestralmente.
+
+\textbf{2. Las promociones actuales no muestran efecto medible; no conviene
+escalarlas.} Fugas y permanencia se comportan igual entre quienes respondieron
+y quienes cancelaron su suscripción a la campaña
+(p = 0.509; HR de 1.04, IC 95\%
+\texttt{{[}0.84,\ 1.30{]}}). Antes de
+invertir más en la campaña, hay que rediseñarla para que sea capaz de mover la
+retención.
+
+\textbf{3. Re-instrumentar el registro de clientes es la modificación de mayor valor
+a largo plazo.} Este análisis se limita por cómo se capturó la información: no
+hay fecha de alta, ni historial de compras fechado, ni fecha de baja --- solo un
+corte de ``días desde la última compra'' y una marca final de abandono. Registrar
+esas fechas convertiría el siguiente análisis en un seguimiento real del
+tiempo de vida del cliente, donde sí puedan detectarse segmentos de riesgo y
+medirse las campañas de retención.
+
+\textbf{Nota técnica (para quien domina el tema).} Tiempo = \texttt{Last\_Purchase\_Days\_Ago}
+(1--364 días), evento = \texttt{Target\_Churn}
+(526 fugas en 1,000 clientes); censurados a la derecha
+sin fuga. Cox con todas las covariables de la Tabla 2: sin HR significativo;
+\texttt{cox.zph} global p = 0.77 (supuesto de riesgos proporcionales
+satisfecho). La base muestra patrones compatibles con datos simulados
+(varianzas planas, nulas correlaciones), por lo que las conclusiones de negocio
+son provisionales mientras la instrumentación no mejore.
+
+\end{document}

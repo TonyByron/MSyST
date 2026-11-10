@@ -1,0 +1,481 @@
+---
+title: \titulo
+output:
+  bookdown::pdf_document2:
+    toc: false
+    number_sections: false
+    latex_engine: xelatex
+    keep_tex: true
+    includes:
+      in_header: plantilla/preambulo.tex
+documentclass: article
+classoption:
+  - 10pt
+  - titlepage
+geometry: "a4paper, includeheadfoot, margin=2.54cm"
+---
+
+```{r setup, include=FALSE}
+# Configuración inicial: entorno limpio, semilla global y opciones de knitr ============================================
+rm(list = ls(all.names = TRUE))
+gc()
+set.seed(123)
+
+knitr::opts_chunk$set(
+  eval       = TRUE,
+  echo       = FALSE,
+  message    = FALSE,
+  warning    = FALSE,
+  fig.align  = "center",
+  fig.width  = 6,
+  fig.height = 3
+)
+```
+
+```{r paquetes, include=FALSE}
+# Paquetes del reporte =================================================================================================
+library(tidyverse)   # manipulación de datos y gráficas (ggplot2, dplyr, readr)
+library(knitr)       # kbl() para tablas LaTeX
+library(kableExtra)  # estilo de tablas: encabezado con color, celdas alternadas
+library(patchwork)   # composición de gráficas en paneles
+library(survival)    # Surv(), survfit(), coxph(), cox.zph: análisis de supervivencia
+library(survminer)   # ggsurvplot(): curvas de Kaplan-Meier con tabla de riesgo
+library(scales)      # formato de números en ejes (label_comma, label_percent)
+```
+
+```{r helpers, include=FALSE}
+# Paleta del reporte, tema y formato común de tablas ===================================================================
+# Paleta retail en línea: semántica estable en todo el reporte.
+col_fuga        <- "#E63946"  # rojo      = fuga (cliente que abandona)
+col_retencion   <- "#2A9D8F"  # verde     = retención (cliente activo)
+col_acento      <- "#F77F00"  # naranja   = acento para hallazgos destacados
+col_neutro      <- "#264653"  # azul      = variables descriptivas neutras
+col_encabezado  <- "#264653"  # encabezado de tablas
+col_zebra       <- "#F1FAEE"  # renglones alternados
+
+colores_churn <- c("Fugado"  = col_fuga,
+                   "Activo"  = col_retencion)
+
+colores_perfil <- c(col_neutro, col_acento, col_retencion, "#8338EC")
+
+tema_reporte <- theme_minimal(base_size = 10) +
+  theme(plot.title    = element_text(face = "bold", size = 10),
+        plot.subtitle = element_text(size = 9),
+        legend.title  = element_blank())
+
+theme_set(tema_reporte)
+
+# Formato común de las tablas (kableExtra) con la paleta del reporte
+tabla <- function(DataFrame, caption = NULL, anchos = NULL){
+
+  n <- ncol(DataFrame)
+  m <- nrow(DataFrame)
+  a <- paste(rep("c", n), collapse = "")
+  if (!is.null(anchos)) a <- anchos
+
+  kbl(DataFrame,
+       booktabs     = FALSE,
+       escape       = FALSE,
+       format       = "latex",
+       longtable    = FALSE,
+       align        = a,
+       caption      = caption
+      ) %>%
+    kable_styling(latex_options = c("hold_position"),
+                  position      = "center",
+                  font_size     = 9
+                 ) %>%
+    row_spec(0,
+             background = col_encabezado,
+             color      = "white",
+             bold       = TRUE
+            ) %>%
+    row_spec(1:m, background = col_zebra)
+}
+
+# Formato de números para el texto
+num <- function(x, digits = 1) formatC(x, format = "f", digits = digits, big.mark = ",")
+```
+
+```{r datos, include=FALSE}
+# Lectura única de la base (Data/ no se modifica) ======================================================================
+datos <- read.csv("Data/online_retail_customer_churn.csv")
+```
+
+```{r preparacion, include=FALSE}
+# Todas las transformaciones y todos los números del reporte ===========================================================
+# Limpieza y construcción (antes -> después)
+datos$Email_Opt_In       <- as.logical(datos$Email_Opt_In)          # texto "True/False" -> lógico
+datos$Target_Churn       <- as.logical(datos$Target_Churn)          # texto "True/False" -> lógico
+datos$Gender             <- factor(datos$Gender)
+datos$Promotion_Response <- factor(datos$Promotion_Response)
+datos$evento             <- ifelse(datos$Target_Churn, 1, 0)        # 1 = fuga, 0 = retención (censura)
+datos$tiempo             <- datos$Last_Purchase_Days_Ago            # días de inactividad
+datos$satisfaccion_grupo <- factor(ifelse(datos$Satisfaction_Score <= 2, "Baja", "Alta"),
+                                   levels = c("Baja", "Alta"))
+datos$Estado             <- factor(ifelse(datos$Target_Churn, "Fugado", "Activo"),
+                                   levels = c("Fugado", "Activo"))
+
+# Números de limpieza
+num_clientes <- nrow(datos)
+num_eventos  <- sum(datos$evento)
+pct_churn    <- mean(datos$evento)
+dias_min     <- min(datos$tiempo)
+dias_max     <- max(datos$tiempo)
+ritmo_dia    <- num_eventos / dias_max   # fuga promedio por día de inactividad (clientes/día)
+n_baja       <- sum(datos$satisfaccion_grupo == "Baja")
+n_alta      <- sum(datos$satisfaccion_grupo == "Alta")
+outliers     <- sapply(select(datos, where(is.numeric)), function(x){
+  q <- quantile(x, c(.25, .75)); sum(x < q[1] - 1.5 * (q[2] - q[1]) | x > q[2] + 1.5 * (q[2] - q[1]))
+})
+
+# Supervivencia: modelos y números
+km_global <- survfit(Surv(tiempo, evento) ~ 1, data = datos)
+km_sat    <- survfit(Surv(tiempo, evento) ~ satisfaccion_grupo, data = datos)
+km_prom   <- survfit(Surv(tiempo, evento) ~ Promotion_Response, data = datos)
+
+p30          <- summary(km_global, times = 30)$surv
+p90          <- summary(km_global, times = 90)$surv
+p180         <- summary(km_global, times = 180)$surv
+umbral_dias  <- 180
+mediana_dias <- summary(km_global)$table["median"]
+ic_mediana   <- summary(km_global)$table[c("0.95LCL", "0.95UCL")]
+p_lr_sat     <- survdiff(Surv(tiempo, evento) ~ satisfaccion_grupo, data = datos)$pvalue
+p_lr_prom    <- survdiff(Surv(tiempo, evento) ~ Promotion_Response, data = datos)$pvalue
+
+modelo_cox <- coxph(
+  Surv(tiempo, evento) ~
+    Age + Annual_Income + Total_Spend + Years_as_Customer +
+    Num_of_Purchases + Average_Transaction_Amount + Num_of_Returns +
+    Num_of_Support_Contacts + Satisfaction_Score +
+    Email_Opt_In + Promotion_Response,
+  data = datos
+)
+cf            <- summary(modelo_cox)$coefficients
+ci            <- exp(confint(modelo_cox))
+cox_min_p     <- min(cf[, 5])
+ph_global_p   <- cox.zph(modelo_cox)$table["GLOBAL", "p"]
+hr_prom_resp  <- exp(cf["Promotion_ResponseResponded", 1])
+ic_prom_resp  <- exp(confint(modelo_cox)["Promotion_ResponseResponded", ])
+
+tabla_cox_fmt <- data.frame(
+  Variable = c("Edad", "Ingreso anual (miles USD)", "Gasto total (USD)",
+               "Antigüedad (años)", "Compras al año", "Transacción promedio (USD)",
+               "Devoluciones", "Contactos a soporte", "Satisfacción (1–5)",
+               "Aceptó correos (sí vs no)", "Respondió promo (vs ignoró)",
+               "Canceló promo (vs ignoró)"),
+  HR       = formatC(exp(cf[, 1]),  format = "f", digits = 3),
+  IC       = sprintf("[%.3f, %.3f]", ci[, 1], ci[, 2]),
+  p        = formatC(cf[, 5], format = "f", digits = 3)
+)
+rownames(tabla_cox_fmt) <- NULL
+
+# Proporción de fuga por ventana del año (para la afirmación "sin tendencia")
+ventanas   <- cut(datos$tiempo, c(0, 90, 180, 270, 300, 330, 364),
+                  labels = c("0–90", "91–180", "181–270", "271–300", "301–330", "331–364"))
+pct_ventana <- tapply(datos$evento, ventanas, mean)
+rango_pct   <- range(pct_ventana)
+```
+
+# Introducción
+
+La empresa que nos contrató opera una tienda en línea y quiere saber qué
+modificación a su producto mejoraría la rentabilidad. El análisis de la
+información recolectada en el último año (`r num(num_clientes, 0)` clientes)
+arroja un hallazgo incómodo pero accionable: **ningún rasgo observable del
+cliente anticipa su fuga** — edad, ingreso, gasto, devoluciones, soporte,
+satisfacción y respuesta a promociones discriminan igual entre quienes abandonan
+y quienes no. El riesgo es de **`r num(100 * pct_churn)`% en el año, presente
+todo el año con aceleración al final** (la mitad de la fuga acumulada ocurre
+alrededor del día
+`r num(mediana_dias, 0)`).
+
+La consecuencia directa para el negocio: esperar señales para retener no
+funciona con estos datos, así que la acción recomendada es un **ciclo de
+re-engagement universal y calendario fijo** (contacto preventivo antes del día
+`r num(umbral_dias, 0)`, cuando la permanencia aún es del
+`r num(100 * p180)`%), más una **re-instrumentación del registro de clientes**
+para que el siguiente análisis sí pueda detectar segmentos de riesgo.
+
+# Planteamiento del problema y propuesta
+
+La tienda vende en línea a clientes cuya actividad se mide por compras; el
+producto incluye promociones, atención a soporte y comunicación por correo. La
+dirección pregunta qué cambiar en el producto para retener más clientes: cada
+punto de retención preserva el ingreso que el cliente genera sin costo de
+adquisición.
+
+En lugar de clasificar clientes como "fugados o no" al final del año, usamos
+**análisis de supervivencia**, que estudia *cuánto tarda en ocurrir un evento*.
+Aquí el evento es la fuga (el cliente marcado como abandonado) y el tiempo es
+la inactividad: los días transcurridos desde su última compra. Esta técnica
+aporta dos ventajas directas para decidir: entrega una **línea de tiempo del
+riesgo** (en qué días conviene actuar) y **compara grupos** (¿retiene más quien
+responde promociones?). Un cliente que no ha fugado al cierre del análisis
+simplemente aporta la información de que sobrevivió hasta su último registro
+(censura); no se le descarta.
+
+Las preguntas que organiza el análisis:
+
+1. ¿En qué momento del año se concentra la fuga? (timing de la acción.)
+2. ¿Algún segmento de clientes fuga más rápido que otro? (¿a quién apuntar?)
+3. ¿Las promociones y el soporte están asociados con la retención? (¿qué
+   modificar del producto?)
+
+# La base y su limpieza
+
+La base tiene `r num(num_clientes, 0)` clientes y 15 variables (identificador,
+perfil demográfico y económico, comportamiento de compra y abandono). La
+inspección y las decisiones se resumen en la Tabla \@ref(tab:limpieza); **no se
+eliminó ningún cliente** y ninguna variable requirió imputación o truncado: no
+hay duplicados, no hay perdidos y ninguna de las 10 variables numéricas tiene
+observaciones fuera de 1.5 rangos intercuartílicos (suma de extremos detectados:
+`r num(sum(outliers), 0)`; Figura \@ref(fig:extremos)).
+
+```{r limpieza}
+# Tabla resumen de transformaciones (antes -> después) =================================================================
+transformaciones <- data.frame(
+  Paso     = c("Lectura", "Duplicados", "Perdidos", "Extremos",
+               "Categóricas", "Evento", "Tiempo", "Satisfacción"),
+  Decisión = c("CSV crudo → datos", "Verificación", "Verificación", "Verificación",
+               "Recodificación", "Construcción", "Construcción", "Agrupación"),
+  Detalle  = c("15 columnas tal como se reciben",
+               "0 duplicados → sin acción",
+               "0 perdidos → sin imputación",
+               paste0("0 fuera de 1.5×IQR en las 10 numéricas → sin truncado"),
+               "Gender y Promotion\\_Response a factor; Email\\_Opt\\_In y Target\\_Churn de texto «True/False» a lógico",
+               sprintf("Target\\_Churn → evento (1 fuga, 0 retención): %s fugas (%s\\%%)",
+                       num(num_eventos, 0), num(100 * pct_churn)),
+               sprintf("Last\\_Purchase\\_Days\\_Ago → días de inactividad (%s–%s)",
+                       num(dias_min, 0), num(dias_max, 0)),
+               sprintf("Satisfaction\\_Score 1–2 → «Baja» (%s); 3–5 → «Alta» (%s)",
+                       num(n_baja, 0), num(n_alta, 0)))
+)
+tabla(transformaciones, caption = "Decisiones de limpieza y construcción de variables (antes → después).", anchos = "m{1.8cm}m{2.2cm}p{9.4cm}")
+```
+
+La construcción del **par de supervivencia** merece nota explícita: el *evento*
+es `Target_Churn` (1 = fugado) y el *tiempo* es `Last_Purchase_Days_Ago`
+(inactividad al cierre del año). Los clientes sin fuga quedan **censurados**:
+sabemos que seguían activos hasta su última compra, entre los días
+`r num(dias_min, 0)` y `r num(dias_max, 0)` del año, pero no su vida completa.
+La limitación que esto impone — la fuga se mide contra la última compra y no
+contra una fecha de baja declarada — se retoma en las conclusiones.
+
+# ¿Quiénes son y cómo compran? (exploración)
+
+El perfil del cliente es amplio y balanceado: edades de 18 a 69 años, ingresos
+anuales de 20 a 200 miles de dólares, antigüedad de 1 a 19 años y género
+repartido en tres tercios (Figura \@ref(fig:perfil)). El comportamiento de
+compra es igualmente disperso y sin valores extremos: de 1 a 99 compras al año,
+gasto total de 109 a 9,999 dólares y transacciones promedio de 10 a 500
+dólares (Figura \@ref(fig:extremos)).
+
+```{r perfil, fig.cap="Perfil de los clientes: ninguna característica demográfica concentra a la base; el público es heterogéneo y balanceado.", fig.width=6.4, fig.height=4.4}
+# Figura 1: perfil demográfico y económico (4 paneles) =================================================================
+p_edad <- ggplot(datos, aes(Age)) +
+  geom_histogram(bins = 20, fill = col_neutro, color = "white") +
+  labs(title = "Edad", x = "Años", y = "Clientes")
+
+p_ingreso <- ggplot(datos, aes(Annual_Income)) +
+  geom_histogram(bins = 25, fill = col_acento, color = "white") +
+  scale_x_continuous(labels = label_comma()) +
+  labs(title = "Ingreso anual", x = "Miles de USD", y = "Clientes")
+
+p_genero <- ggplot(datos, aes(Gender, fill = Gender)) +
+  geom_bar(color = "white") +
+  scale_fill_manual(values = colores_perfil) +
+  labs(title = "Género", x = NULL, y = "Clientes") +
+  theme(legend.position = "none")
+
+p_antiguedad <- ggplot(datos, aes(Years_as_Customer)) +
+  geom_histogram(bins = 19, fill = col_retencion, color = "white") +
+  labs(title = "Antigüedad", x = "Años como cliente", y = "Clientes")
+
+(p_edad + p_ingreso) / (p_genero + p_antiguedad) +
+  plot_annotation(theme = tema_reporte)
+```
+
+```{r extremos, fig.cap="Diagramas de caja del comportamiento de compra: no hay valores extremos fuera de 1.5×IQR en ninguna variable; no se requirió truncado ni winsorización.", fig.width=6.4, fig.height=3.6}
+# Figura 2: cajas de comportamiento (detección de extremos) ============================================================
+p_caja_spend <- ggplot(datos, aes(y = Total_Spend)) +
+  geom_boxplot(fill = col_neutro, color = col_neutro) +
+  scale_y_continuous(labels = label_comma()) +
+  labs(title = "Gasto total anual", y = "USD", x = NULL)
+
+p_caja_compras <- ggplot(datos, aes(y = Num_of_Purchases)) +
+  geom_boxplot(fill = col_neutro, color = col_neutro) +
+  labs(title = "Compras al año", y = "Compras", x = NULL)
+
+p_caja_trans <- ggplot(datos, aes(y = Average_Transaction_Amount)) +
+  geom_boxplot(fill = col_neutro, color = col_neutro) +
+  labs(title = "Transacción promedio", y = "USD", x = NULL)
+
+p_caja_dias <- ggplot(datos, aes(y = Last_Purchase_Days_Ago)) +
+  geom_boxplot(fill = col_acento, color = col_acento) +
+  labs(title = "Días desde la última compra", y = "Días", x = NULL)
+
+(p_caja_spend + p_caja_compras) / (p_caja_trans + p_caja_dias) +
+  plot_annotation(theme = tema_reporte)
+```
+
+Las variables numéricas entre sí prácticamente no se correlacionan
+(Figura \@ref(fig:correlaciones)): no existe un "cliente grande" (mucho ingreso
+y mucho gasto, muchas compras) ni combinaciones de variables que agrupen a la
+base. Esta primera señal — la base no tiene segmentos naturales — anticipa el
+hallazgo central del análisis de supervivencia.
+
+```{r correlaciones, fig.cap="Correlaciones entre variables numéricas: todas cercanas a cero; la base no tiene segmentos naturales.", fig.width=4.6, fig.height=3.4}
+# Figura 3: mapa de calor de correlaciones =============================================================================
+correlacion <- cor(select(datos, where(is.numeric), -Customer_ID, -tiempo) %>%
+                     rename(Fuga = evento))
+
+as.data.frame(as.table(correlacion)) %>%
+  ggplot(aes(Var1, Var2, fill = Freq)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = col_retencion, mid = "white", high = col_fuga,
+                       limits = c(-1, 1), name = "r") +
+  labs(x = NULL, y = NULL) +
+  theme_minimal(base_size = 9) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+# ¿Qué distingue a quien fuga? (comparación inicial)
+
+Al cruzar cada variable con el abandono (Figura \@ref(fig:churn-rel)) no
+aparece ningún contraste: la distribución de satisfacción, contactos a soporte
+y devoluciones es la misma entre fugados y activos, y la respuesta a
+promociones se reparte igual en ambos grupos. La fracción de fuga oscila
+**sin tendencia entre `r num(100 * rango_pct[1])`% y
+`r num(100 * rango_pct[2])`%** en todas las ventanas del año.
+
+```{r churn-rel, fig.cap="Fuga frente a satisfacción, soporte y promociones: las distribuciones de fugados (rojo) y activos (verde) son indistinguibles en toda variable.", fig.width=6.4, fig.height=3.2}
+# Figura 4: relación de cada variable con la fuga ======================================================================
+p_sat <- ggplot(datos, aes(Estado, Satisfaction_Score, fill = Estado)) +
+  geom_boxplot() +
+  scale_fill_manual(values = colores_churn) +
+  labs(title = "Satisfacción", x = NULL, y = "Escala 1-5") +
+  theme(legend.position = "none")
+
+p_sop <- ggplot(datos, aes(Estado, Num_of_Support_Contacts, fill = Estado)) +
+  geom_boxplot() +
+  scale_fill_manual(values = colores_churn) +
+  labs(title = "Contactos a soporte", x = NULL, y = "Contactos al año") +
+  theme(legend.position = "none")
+
+p_prom <- ggplot(datos, aes(Promotion_Response, fill = Estado)) +
+  geom_bar(position = "fill", color = "white") +
+  scale_fill_manual(values = colores_churn) +
+  scale_y_continuous(labels = label_percent()) +
+  labs(title = "Respuesta a promociones", x = NULL, y = "Proporción") +
+  theme(legend.position = "top")
+
+p_sat + p_sop + p_prom + plot_layout(nrow = 1, widths = c(1, 1, 1.3)) +
+  plot_annotation(theme = tema_reporte)
+```
+
+# ¿Cuándo se van los clientes? (análisis de supervivencia)
+
+La curva de Kaplan–Meier global (Figura \@ref(fig:km-global)) responde la
+primera pregunta: la fuga **no se concentra en ningún periodo**. El abandono se
+acumula a un ritmo promedio de `r num(ritmo_dia, 2)` clientes por día: el
+riesgo es plano durante la mayor parte del año y se acelera al final, en la
+cola de la distribución de inactividad (Figura
+\@ref(fig:km-global)). La permanencia es del
+`r num(100 * p30)`% al día 30, `r num(100 * p90)`% al día 90 y
+`r num(100 * p180)`% al día 180; la mediana de "sobrevivencia" es de
+`r num(mediana_dias, 0)` días (IC 95%: `r num(ic_mediana[1], 0)`–`r num(ic_mediana[2], 0)`),
+es decir, la mitad de la fuga anual ocurre alrededor de los 9 meses de
+inactividad.
+
+```{r km-global, fig.cap="Kaplan–Meier global: la permanencia cae de manera pareja la mayor parte del año y se acelera al final (cola de inactividad); la mitad de la fuga acumulada ocurre cerca del día 269. La acción de retención debe activarse antes del día 180.", fig.width=5.6, fig.height=4}
+# Figura 5: curva global con tabla de riesgo ===========================================================================
+ggsurvplot(km_global,
+           conf.int   = TRUE,
+           risk.table = TRUE,
+           palette    = col_retencion,
+           xlab       = "Días desde la última compra",
+           ylab       = "Probabilidad de permanencia",
+           legend     = "none",
+           ggtheme      = tema_reporte,
+           tables.theme = tema_reporte)
+```
+
+Las comparaciones por segmento (Figura \@ref(fig:km-segmentos)) confirman la
+segunda pregunta: las curvas de satisfacción baja (`r num(n_baja, 0)` clientes)
+y alta (`r num(n_alta, 0)`) se traslapan, con prueba log-rank
+p = `r num(p_lr_sat, 3)`; lo mismo ocurre entre quienes respondieron, ignoraron
+o se dieron de baja de las promociones (p = `r num(p_lr_prom, 3)`). Ninguna
+diferencia es estadísticamente detectable.
+
+```{r km-segmentos, fig.cap="Permanencia según satisfacción y respuesta a promociones: las curvas se traslapan (log-rank p=0.23 y p=0.51); ningún segmento retiene mejor que otro.", fig.width=6.4, fig.height=3.2}
+# Figura 6: Kaplan–Meier por segmentos =================================================================================
+g_sat <- ggsurvplot(km_sat, data = datos, pval = TRUE,
+                    palette = c(col_fuga, col_retencion),
+                    xlab = "Días", ylab = "Permanencia",
+                    legend.labs = c("Satisfacción baja", "Satisfacción alta"),
+                    ggtheme = tema_reporte)$plot +
+  theme(legend.position = "bottom")
+
+g_prom <- ggsurvplot(km_prom, data = datos, pval = TRUE,
+                     palette = c(col_neutro, col_fuga, col_retencion),
+                     xlab = "Días", ylab = NULL,
+                     legend.labs = c("Ignoró promo", "Respondió", "Canceló suscripción"),
+                     ggtheme = tema_reporte)$plot +
+  theme(legend.position = "bottom")
+
+g_sat + g_prom
+```
+
+Para ponderar todas las variables a la vez, ajustamos el modelo de Cox, que
+estima cuánto multiplica cada característica el riesgo de fuga manteniendo el
+resto constante (Tabla \@ref(tab:cox-tabla)). La lectura ejecutiva de la tabla:
+**ningún hazard ratio se aleja de 1.0 con confianza** — el intervalo de cada
+variable incluye al 1.0 — y la significancia más cercana (gasto total,
+p = `r num(cox_min_p, 2)`) no alcanza el umbral convencional de 0.05. El
+supuesto de riesgos proporcionales se verifica (prueba global
+p = `r num(ph_global_p, 2)`), de modo que las estimaciones son válidas; lo que
+dicen es simplemente que no hay efectos.
+
+```{r cox-tabla}
+# Tabla del modelo de Cox (HR legibles) ================================================================================
+tabla(tabla_cox_fmt,
+      caption = "Modelo de Cox: hazard ratios (HR) por variable. HR > 1 aumenta el riesgo de fuga; todo intervalo contiene al 1.0 → ningún efecto detectable.")
+```
+
+# Qué implica esto para el negocio
+
+**1. El riesgo es plano y alto: retener requiere actuar a todos, no a unos
+pocos.** Con `r num(100 * pct_churn)`% de fuga anual, sin segmentos
+distinguibles y con un riesgo que solo se acelera al final del año, un programa de retención dirigido a
+"clientes en riesgo" no tiene a dónde apuntar: las señales disponibles no
+anticipan nada. La modificación al producto que este análisis sostiene es un
+**ciclo de re-engagement universal**: contacto preventivo a toda la base antes
+del día 180 (cuando la permanencia sigue en `r num(100 * p180)`%) — por
+ejemplo, incentivo de recompra y recordatorio de valor — repetido
+trimestralmente.
+
+**2. Las promociones actuales no muestran efecto medible; no conviene
+escalarlas.** Fugas y permanencia se comportan igual entre quienes respondieron
+y quienes cancelaron su suscripción a la campaña
+(p = `r num(p_lr_prom, 3)`; HR de `r num(hr_prom_resp, 2)`, IC 95%
+`[`r num(ic_prom_resp[1], 2)`, `r num(ic_prom_resp[2], 2)`]`). Antes de
+invertir más en la campaña, hay que rediseñarla para que sea capaz de mover la
+retención.
+
+**3. Re-instrumentar el registro de clientes es la modificación de mayor valor
+a largo plazo.** Este análisis se limita por cómo se capturó la información: no
+hay fecha de alta, ni historial de compras fechado, ni fecha de baja — solo un
+corte de "días desde la última compra" y una marca final de abandono. Registrar
+esas fechas convertiría el siguiente análisis en un seguimiento real del
+tiempo de vida del cliente, donde sí puedan detectarse segmentos de riesgo y
+medirse las campañas de retención.
+
+**Nota técnica (para quien domina el tema).** Tiempo = `Last_Purchase_Days_Ago`
+(`r num(dias_min, 0)`–`r num(dias_max, 0)` días), evento = `Target_Churn`
+(`r num(num_eventos, 0)` fugas en `r num(num_clientes, 0)` clientes); censurados a la derecha
+sin fuga. Cox con todas las covariables de la Tabla 2: sin HR significativo;
+`cox.zph` global p = `r num(ph_global_p, 2)` (supuesto de riesgos proporcionales
+satisfecho). La base muestra patrones compatibles con datos simulados
+(varianzas planas, nulas correlaciones), por lo que las conclusiones de negocio
+son provisionales mientras la instrumentación no mejore.
