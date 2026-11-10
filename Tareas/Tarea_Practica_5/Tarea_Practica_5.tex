@@ -109,7 +109,7 @@
 % Identidad del documento: conservar estos comandos
 % ============================================================
 \newcommand{\materia}{Modelos de Supervivencia y Series de Tiempo}
-\newcommand{\TituloTarea}{Tarea Practica 5}
+\newcommand{\TituloTarea}{Tarea Práctica 5}
 \newcommand{\Tony}{\textsc{Anthonie Byron Ornelas Clement}}
 
 % ============================================================
@@ -431,9 +431,9 @@ hallazgo central del análisis de supervivencia.
 
 \section{¿Qué distingue a quien fuga? (comparación inicial)}\label{quuxe9-distingue-a-quien-fuga-comparaciuxf3n-inicial}
 
-Al cruzar cada variable con el abandono (Figura \ref{fig:churn-rel}) no
-aparece ningún contraste: la distribución de satisfacción, contactos a soporte
-y la respuesta a promociones es la misma entre fugados y activos. La fracción de fuga oscila
+Al cruzar las variables de experiencia del cliente con el abandono
+(Figura \ref{fig:churn-rel}: satisfacción, soporte y respuesta a promociones) no
+aparece ningún contraste: la distribución es la misma entre fugados y activos. La fracción de fuga oscila
 \textbf{sin tendencia entre 48.3\% y
 60.8\%} en todas las ventanas del año.
 
@@ -457,7 +457,8 @@ cola de la distribución de inactividad (Figura
 94.9\% al día 30, 85.9\% al día 90 y
 70.4\% al día 180; la mediana de ``sobrevivencia'' es de
 269 días (IC 95\%: 255--283),
-es decir, la mitad de la base habría fugado hacia los 9 meses de inactividad.
+es decir, la mitad de la base habría fugado hacia los
+9 meses de inactividad.
 Parte de la aceleración final de la curva refleja el cierre de la
 ventana de observación (un cliente solo puede acumular hasta 364 días de
 inactividad) y no un cambio de comportamiento.
@@ -502,7 +503,7 @@ válidas; lo que dicen es simplemente que no hay efectos.
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:cox-tabla}Modelo de Cox: hazard ratios (HR) por variable. HR > 1 aumenta el riesgo de fuga; todo intervalo contiene al 1.0 → ningún efecto detectable.}
+\caption{\label{tab:cox-tabla}Modelo de Cox: hazard ratios (HR) por variable. HR > 1 aumenta el riesgo de fuga; ningún intervalo excluye al 1.0 (el de Gasto lo roza por arriba, p = 0.054) → ningún efecto detectable.}
 \centering
 \fontsize{9}{11}\selectfont
 \begin{tabular}[t]{c|c|c|c}
@@ -545,8 +546,9 @@ distinguibles y con un riesgo que solo se acelera al final del año, un programa
 anticipan nada. La modificación al producto que este análisis sostiene es un
 \textbf{ciclo de re-engagement universal}: contacto preventivo a toda la base antes
 del día 180 (cuando la permanencia sigue en 70.4\%) --- por
-ejemplo, incentivo de recompra y recordatorio de valor --- repetido
-trimestralmente.
+ejemplo, incentivo de recompra y recordatorio de valor. La cadencia de
+repetición (p.~ej. trimestral) es una decisión de implementación que este
+análisis no puede fijar con estos datos.
 
 \textbf{2. Las promociones actuales no muestran efecto medible; no conviene
 escalarlas.} Fugas y permanencia se comportan igual entre quienes respondieron

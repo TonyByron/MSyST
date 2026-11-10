@@ -58,6 +58,10 @@ colores_churn <- c("Fugado"  = col_fuga,
 
 colores_perfil <- c(col_neutro, col_acento, col_retencion, "#8338EC")
 
+# Paleta de segmentos de respuesta: sin rojo/verde de churn para no chocar con
+# la semántica fuga/retención de las figuras de fuga
+colores_segmentos <- c("#457B9D", "#E9C46A", "#7B6D8D")
+
 tema_reporte <- theme_minimal(base_size = 10) +
   theme(plot.title    = element_text(face = "bold", size = 10),
         plot.subtitle = element_text(size = 9),
@@ -382,9 +386,9 @@ as.data.frame(as.table(correlacion)) %>%
 
 # ¿Qué distingue a quien fuga? (comparación inicial)
 
-Al cruzar cada variable con el abandono (Figura \@ref(fig:churn-rel)) no
-aparece ningún contraste: la distribución de satisfacción, contactos a soporte
-y la respuesta a promociones es la misma entre fugados y activos. La fracción de fuga oscila
+Al cruzar las variables de experiencia del cliente con el abandono
+(Figura \@ref(fig:churn-rel): satisfacción, soporte y respuesta a promociones) no
+aparece ningún contraste: la distribución es la misma entre fugados y activos. La fracción de fuga oscila
 **sin tendencia entre `r num(100 * rango_pct[1])`% y
 `r num(100 * rango_pct[2])`%** en todas las ventanas del año.
 
@@ -422,12 +426,13 @@ acumula a un ritmo promedio de `r num(ritmo_dia, 2)` clientes por día: el
 riesgo es plano durante la mayor parte del año y se acelera al final, en la
 cola de la distribución de inactividad (Figura
 \@ref(fig:km-global)). La permanencia es del
-`r num(100 * p30)`% al día 30, `r num(100 * p90)`% al día 90 y
-`r num(100 * p180)`% al día 180; la mediana de "sobrevivencia" es de
+`r num(100 * p30)`% al día `r round(umbral_dias / 6)`, `r num(100 * p90)`% al día 90 y
+`r num(100 * p180)`% al día `r umbral_dias`; la mediana de "sobrevivencia" es de
 `r num(mediana_dias, 0)` días (IC 95%: `r num(ic_mediana[1], 0)`–`r num(ic_mediana[2], 0)`),
-es decir, la mitad de la base habría fugado hacia los 9 meses de inactividad.
+es decir, la mitad de la base habría fugado hacia los
+`r round(mediana_dias / 30.4)` meses de inactividad.
 Parte de la aceleración final de la curva refleja el cierre de la
-ventana de observación (un cliente solo puede acumular hasta 364 días de
+ventana de observación (un cliente solo puede acumular hasta `r dias_max` días de
 inactividad) y no un cambio de comportamiento.
 
 ```{r km-global, fig.cap=paste0("Kaplan–Meier global: la permanencia cae de manera pareja la mayor parte del año y se acelera al final (cola de inactividad); la mitad de la base habría fugado hacia el día ", num(mediana_dias, 0), ". La acción de retención debe activarse antes del día ", num(umbral_dias, 0), "."), fig.width=5.6, fig.height=4}
@@ -441,6 +446,7 @@ ggsurvplot(km_global,
            legend     = "none",
            legend.title = "",
            risk.table.title = "Clientes en riesgo",
+           risk.table.y.text = FALSE,
            surv.median.line = "none",
            ggtheme      = tema_reporte,
            tables.theme = tema_reporte + theme(plot.title = element_text(face = "bold", size = 9)))
@@ -465,7 +471,7 @@ g_sat <- ggsurvplot(km_sat, data = datos, pval = TRUE,
   theme(legend.position = "bottom")
 
 g_prom <- ggsurvplot(km_prom, data = datos, pval = TRUE,
-                     palette = colores_perfil[1:3],
+                     palette = colores_segmentos,
                      xlab = "Días", ylab = NULL,
                      legend.labs = c("Ignoró promo", "Respondió", "Canceló suscripción"),
                      ggtheme = tema_reporte)$plot +
@@ -488,7 +494,7 @@ válidas; lo que dicen es simplemente que no hay efectos.
 ```{r cox-tabla}
 # Tabla del modelo de Cox (HR legibles) ================================================================================
 tabla(tabla_cox_fmt,
-      caption = "Modelo de Cox: hazard ratios (HR) por variable. HR > 1 aumenta el riesgo de fuga; todo intervalo contiene al 1.0 → ningún efecto detectable.")
+      caption = "Modelo de Cox: hazard ratios (HR) por variable. HR > 1 aumenta el riesgo de fuga; ningún intervalo excluye al 1.0 (el de Gasto lo roza por arriba, p = 0.054) → ningún efecto detectable.")
 ```
 
 # Qué implica esto para el negocio
@@ -499,9 +505,10 @@ distinguibles y con un riesgo que solo se acelera al final del año, un programa
 "clientes en riesgo" no tiene a dónde apuntar: las señales disponibles no
 anticipan nada. La modificación al producto que este análisis sostiene es un
 **ciclo de re-engagement universal**: contacto preventivo a toda la base antes
-del día 180 (cuando la permanencia sigue en `r num(100 * p180)`%) — por
-ejemplo, incentivo de recompra y recordatorio de valor — repetido
-trimestralmente.
+del día `r umbral_dias` (cuando la permanencia sigue en `r num(100 * p180)`%) — por
+ejemplo, incentivo de recompra y recordatorio de valor. La cadencia de
+repetición (p. ej. trimestral) es una decisión de implementación que este
+análisis no puede fijar con estos datos.
 
 **2. Las promociones actuales no muestran efecto medible; no conviene
 escalarlas.** Fugas y permanencia se comportan igual entre quienes respondieron
