@@ -176,7 +176,7 @@ ic_prom_resp  <- exp(confint(modelo_cox)[grep("^Promotion_ResponseRespondió$", 
 # El ingreso ya viene en miles de USD y las demás variables conservan su escala (años, conteos, 1-5)
 escala <- c(1, 1, 1000, 1, 1, 1000, 1, 1, 1, 1, 1, 1)
 hr_tbl  <- exp(cf[, 1] * escala)
-ic_tbl  <- exp(ci * escala)
+ic_tbl  <- ci^escala
 nombres <- c("Edad", "Ingreso anual (miles USD)", "Gasto por cada 1,000 USD",
              "Antigüedad (años)", "Compras al año", "Transacción por cada 1,000 USD",
              "Devoluciones", "Contactos a soporte", "Satisfacción (1–5)",
