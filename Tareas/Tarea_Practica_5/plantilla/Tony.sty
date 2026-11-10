@@ -1,0 +1,37 @@
+% ============================================================
+% Compatibilidad: archivo histórico de la plantilla original
+% ============================================================
+% Las definiciones funcionales permanecen en tony.sty.
+% Este archivo se conserva para no romper documentos existentes.
+
+% Paquetes históricos que no interfieren con R Markdown/XeLaTeX
+\usepackage{amsmath,amsthm,amscd,amsfonts,amssymb,dsfont}
+\usepackage{titleref}
+\usepackage{upgreek}
+
+\let\vacio\varnothing
+
+% Si un trabajo anterior depende de comandos definidos en el
+% Tony.sty original, se mantienen aquí para compatibilidad.
+\newcommand{\e}{\varepsilon}
+
+\newcommand{\E}{ \mathbb{E} }
+\renewcommand{\P}{ \mathbb{P} }
+\newcommand{\var}[1]{Var\pars{#1}}
+
+\newcommand{\integral}[2]{\displaystyle \intop\limits_{#1}^{#2}}
+\newcommand{\dado}{\;\mid\;}
+
+
+\newcommand{\al}[1]{
+\begin{align*}
+  #1
+\end{align*}
+}
+
+
+\newcommand{\aln}[2]{
+\begin{alignat*}{#1}
+  #2
+\end{alignat*}
+}

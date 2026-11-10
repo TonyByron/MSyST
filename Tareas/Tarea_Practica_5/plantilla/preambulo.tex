@@ -1,0 +1,186 @@
+% ============================================================
+% Preambulo moderno para Tarea Práctica 1
+% Basado en la plantilla original del autor.
+% Se conservan las interfaces: \materia, \TituloTarea, \Tony y \titulo.
+% ============================================================
+
+% Asegura que los .sty locales se encuentren dentro de la carpeta plantilla/
+\makeatletter
+%\def\input@path{{plantilla/}}
+\makeatother
+
+\usepackage{fontspec}      % Si no lo tienes, añádelo antes de babel
+\usepackage[spanish,es-tabla,activeacute]{babel}
+\selectlanguage{spanish}
+\spanishdecimal{.}
+
+\usepackage{varios}
+\usepackage{needspace}  % evita que tablas cortas se partan entre páginas
+\graphicspath{{plantilla/}}
+% ------------------------------------------------------------------
+% Paleta Línea 12 (Línea Dorada) — sobrescribe los colores UNAM.
+% Todo lo que ya usa estos nombres (portada, secciones, cajas,
+% hipervínculos) hereda el dorado automáticamente.
+% ------------------------------------------------------------------
+\definecolor{UNAMBlue}{HTML}{006199}        % dorado principal
+\definecolor{UNAMAccent}{HTML}{8A6A16}      % dorado oscuro (contraste)
+\definecolor{UNAMLightBlue}{HTML}{F3E7C6}   % fondo claro dorado
+\definecolor{UNAMLightAccent}{HTML}{EAD6A0} % fondo claro dorado oscuro
+\definecolor{UNAMMuted}{HTML}{5B5B5B}       % gris neutro, sin cambio
+\definecolor{UNAMText}{HTML}{262626}        % texto principal
+\definecolor{UNAMLightGray}{HTML}{FBF9F4}   % blanco hueso
+
+% Matemáticas modernas para XeLaTeX
+\usepackage{unicode-math}
+\setmathfont{TeX Gyre Termes Math}
+
+\renewcommand{\labelitemi}{$\bullet$}
+\renewcommand{\labelitemii}{$\circ$}
+
+% ============================================================
+% Identidad del documento: conservar estos comandos
+% ============================================================
+\newcommand{\materia}{Modelos de Supervivencia y Series de Tiempo}
+\newcommand{\TituloTarea}{Tarea Practica 5}
+\newcommand{\Tony}{\textsc{Anthonie Byron Ornelas Clement}}
+
+% ============================================================
+% Portada
+% ============================================================
+
+
+
+\newcommand{\titulo}{%
+  \begin{minipage}{0.93\textwidth}
+    \vspace{0.6cm}
+    \begin{center}
+      \IfFileExists{escudo.png}{%
+        \includegraphics[height=7cm]{escudo.png}\par\vspace{0.55cm}
+      }{%
+        \IfFileExists{escudo0.png}{%
+          \includegraphics[height=7cm]{escudo0.png}\par\vspace{0.55cm}
+        }{}
+      }
+      {\sffamily\small\bfseries FACULTAD DE CIENCIAS\par}
+      \vspace{0.12cm}
+      {\sffamily\footnotesize\color{UNAMMuted}\materia\par}
+      \vspace{0.75cm}
+        \colorbox{UNAMBlue}{\parbox{0.82\textwidth}{%
+        \centering
+        \vspace{0.22cm}
+        {\sffamily\color{white}\bfseries\fontsize{24}{29}\selectfont \TituloTarea\par}
+        \vspace{0.22cm}
+      }}
+      \par\vspace{0.3cm}
+      \textcolor{UNAMAccent}{\rule{4.5cm}{1pt}}\par
+      \vfill
+      %{\sffamily\small\bfseries \Tony\par}
+      \vspace{0.3cm}
+      {\large \Tony \par}
+      \date{\today}
+    \end{center}
+  \end{minipage}%
+}
+
+% ============================================================
+% Ajustes visuales generales
+% ============================================================
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+
+% Hyperref lo administra Pandoc/R Markdown. Solo configuramos al inicio.
+\makeatletter
+\AtBeginDocument{%
+  \@ifpackageloaded{hyperref}{%
+    \hypersetup{
+      colorlinks=true,
+      linkcolor=UNAMBlue,
+      urlcolor=UNAMBlue,
+      citecolor=UNAMBlue
+    }
+  }{}
+}
+\makeatother
+
+% Títulos
+\usepackage{titlesec}
+\titleformat{\section}
+  {\sffamily\Large\bfseries\color{UNAMBlue}}
+  {\thesection}{0.65em}{}
+  [\vspace{0.18em}\color{UNAMAccent}\titlerule]
+
+\titleformat{\subsection}
+  {\sffamily\large\bfseries\color{UNAMText}}
+  {\thesubsection}{0.6em}{}
+
+\titleformat{\subsubsection}
+  {\sffamily\normalsize\bfseries\color{UNAMBlue}}
+  {\thesubsubsection}{0.55em}{}
+
+% Figuras
+\captionsetup{
+  font=small,
+  labelfont={bf,color=UNAMBlue},
+  textfont={color=UNAMMuted},
+  justification=centering,
+  skip=7pt
+}
+
+% ============================================================
+% Entornos de comunicación para el Rmd
+% ============================================================
+\newtcolorbox{queobservar}{%
+  enhanced,
+  breakable,
+  colback=UNAMLightBlue,
+  colframe=UNAMBlue,
+  boxrule=0pt,
+  leftrule=3pt,
+  arc=2pt,
+  left=8pt,right=8pt,top=7pt,bottom=7pt,
+  before skip=8pt,after skip=10pt,
+  fonttitle=\sffamily\bfseries,
+  title=¿Qué debemos observar?%
+}
+
+\newtcolorbox{notatecnica}{%
+  enhanced,
+  breakable,
+  colback=UNAMLightGray,
+  colframe=UNAMMuted,
+  boxrule=0pt,
+  leftrule=3pt,
+  arc=2pt,
+  left=8pt,right=8pt,top=7pt,bottom=7pt,
+  before skip=8pt,after skip=10pt,
+  fonttitle=\sffamily\bfseries,
+  title=Nota técnica%
+}
+
+\newtcolorbox{hallazgo}{%
+  enhanced,
+  breakable,
+  colback=UNAMLightAccent,
+  colframe=UNAMAccent,
+  boxrule=0pt,
+  leftrule=4pt,
+  arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=8pt,
+  before skip=9pt,after skip=11pt,
+  fonttitle=\sffamily\bfseries,
+  title=Hallazgo principal%
+}
+
+
+\newtcolorbox{citadestacada}{%
+  enhanced,
+  breakable,
+  colback=white,
+  colframe=UNAMBlue,
+  boxrule=0pt,
+  leftrule=2.4pt,
+  arc=0pt,
+  left=12pt,right=10pt,top=6pt,bottom=6pt,
+  before skip=8pt,after skip=10pt,
+  fontupper=\itshape\color{UNAMText}
+}
