@@ -294,8 +294,8 @@ arroja un hallazgo incómodo pero accionable: \textbf{ningún rasgo observable d
 cliente anticipa su fuga} --- edad, ingreso, gasto, devoluciones, soporte,
 satisfacción y respuesta a promociones discriminan igual entre quienes abandonan
 y quienes no. El riesgo es de \textbf{52.6\% en el año, presente
-todo el año con aceleración al final} (la mitad de la fuga acumulada ocurre
-alrededor del día
+todo el año con aceleración al final} (según la curva de Kaplan--Meier, la
+mitad de la base habría fugado hacia el día
 269).
 
 La consecuencia directa para el negocio: esperar señales para retener no
@@ -433,8 +433,7 @@ hallazgo central del análisis de supervivencia.
 
 Al cruzar cada variable con el abandono (Figura \ref{fig:churn-rel}) no
 aparece ningún contraste: la distribución de satisfacción, contactos a soporte
-y devoluciones es la misma entre fugados y activos, y la respuesta a
-promociones se reparte igual en ambos grupos. La fracción de fuga oscila
+y la respuesta a promociones es la misma entre fugados y activos. La fracción de fuga oscila
 \textbf{sin tendencia entre 48.3\% y
 60.8\%} en todas las ventanas del año.
 
@@ -458,8 +457,8 @@ cola de la distribución de inactividad (Figura
 94.9\% al día 30, 85.9\% al día 90 y
 70.4\% al día 180; la mediana de ``sobrevivencia'' es de
 269 días (IC 95\%: 255--283),
-es decir, la mitad de la fuga anual ocurre alrededor de los 9 meses de
-inactividad. Parte de la aceleración final de la curva refleja el cierre de la
+es decir, la mitad de la base habría fugado hacia los 9 meses de inactividad.
+Parte de la aceleración final de la curva refleja el cierre de la
 ventana de observación (un cliente solo puede acumular hasta 364 días de
 inactividad) y no un cambio de comportamiento.
 
@@ -469,7 +468,7 @@ inactividad) y no un cambio de comportamiento.
 
 }
 
-\caption{Kaplan–Meier global: la permanencia cae de manera pareja la mayor parte del año y se acelera al final (cola de inactividad); la mitad de la fuga acumulada ocurre cerca del día 269. La acción de retención debe activarse antes del día 180.}\label{fig:km-global}
+\caption{Kaplan–Meier global: la permanencia cae de manera pareja la mayor parte del año y se acelera al final (cola de inactividad); la mitad de la base habría fugado hacia el día 269. La acción de retención debe activarse antes del día 180.}\label{fig:km-global}
 \end{figure}
 
 Las comparaciones por segmento (Figura \ref{fig:km-segmentos}) confirman la

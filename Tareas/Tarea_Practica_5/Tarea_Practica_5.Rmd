@@ -197,6 +197,15 @@ ventanas   <- cut(datos$tiempo, c(0, 90, 180, 270, 300, 330, 364),
                   labels = c("0–90", "91–180", "181–270", "271–300", "301–330", "331–364"))
 pct_ventana <- tapply(datos$evento, ventanas, mean)
 rango_pct   <- range(pct_ventana)
+
+# Etiquetas cortas para la matriz de correlaciones (Figura 3)
+nombres_cortos <- c(
+  Age = "Edad", Annual_Income = "Ingreso", Total_Spend = "Gasto",
+  Years_as_Customer = "Antigüedad", Num_of_Purchases = "Compras",
+  Average_Transaction_Amount = "Trans. prom.", Num_of_Returns = "Devoluciones",
+  Num_of_Support_Contacts = "Soporte", Satisfaction_Score = "Satisfacción",
+  Last_Purchase_Days_Ago = "Últ. compra", evento = "Fuga"
+)
 ```
 
 # Introducción
@@ -208,8 +217,8 @@ arroja un hallazgo incómodo pero accionable: **ningún rasgo observable del
 cliente anticipa su fuga** — edad, ingreso, gasto, devoluciones, soporte,
 satisfacción y respuesta a promociones discriminan igual entre quienes abandonan
 y quienes no. El riesgo es de **`r num(100 * pct_churn)`% en el año, presente
-todo el año con aceleración al final** (la mitad de la fuga acumulada ocurre
-alrededor del día
+todo el año con aceleración al final** (según la curva de Kaplan–Meier, la
+mitad de la base habría fugado hacia el día
 `r num(mediana_dias, 0)`).
 
 La consecuencia directa para el negocio: esperar señales para retener no
@@ -359,6 +368,7 @@ hallazgo central del análisis de supervivencia.
 # Figura 3: mapa de calor de correlaciones =============================================================================
 correlacion <- cor(select(datos, where(is.numeric), -Customer_ID, -tiempo) %>%
                      rename(Fuga = evento))
+dimnames(correlacion) <- lapply(dimnames(correlacion), function(x) ifelse(is.na(nombres_cortos[x]), x, nombres_cortos[x]))
 
 as.data.frame(as.table(correlacion)) %>%
   ggplot(aes(Var1, Var2, fill = Freq)) +
@@ -374,8 +384,7 @@ as.data.frame(as.table(correlacion)) %>%
 
 Al cruzar cada variable con el abandono (Figura \@ref(fig:churn-rel)) no
 aparece ningún contraste: la distribución de satisfacción, contactos a soporte
-y devoluciones es la misma entre fugados y activos, y la respuesta a
-promociones se reparte igual en ambos grupos. La fracción de fuga oscila
+y la respuesta a promociones es la misma entre fugados y activos. La fracción de fuga oscila
 **sin tendencia entre `r num(100 * rango_pct[1])`% y
 `r num(100 * rango_pct[2])`%** en todas las ventanas del año.
 
@@ -416,12 +425,12 @@ cola de la distribución de inactividad (Figura
 `r num(100 * p30)`% al día 30, `r num(100 * p90)`% al día 90 y
 `r num(100 * p180)`% al día 180; la mediana de "sobrevivencia" es de
 `r num(mediana_dias, 0)` días (IC 95%: `r num(ic_mediana[1], 0)`–`r num(ic_mediana[2], 0)`),
-es decir, la mitad de la fuga anual ocurre alrededor de los 9 meses de
-inactividad. Parte de la aceleración final de la curva refleja el cierre de la
+es decir, la mitad de la base habría fugado hacia los 9 meses de inactividad.
+Parte de la aceleración final de la curva refleja el cierre de la
 ventana de observación (un cliente solo puede acumular hasta 364 días de
 inactividad) y no un cambio de comportamiento.
 
-```{r km-global, fig.cap=paste0("Kaplan–Meier global: la permanencia cae de manera pareja la mayor parte del año y se acelera al final (cola de inactividad); la mitad de la fuga acumulada ocurre cerca del día ", num(mediana_dias, 0), ". La acción de retención debe activarse antes del día ", num(umbral_dias, 0), "."), fig.width=5.6, fig.height=4}
+```{r km-global, fig.cap=paste0("Kaplan–Meier global: la permanencia cae de manera pareja la mayor parte del año y se acelera al final (cola de inactividad); la mitad de la base habría fugado hacia el día ", num(mediana_dias, 0), ". La acción de retención debe activarse antes del día ", num(umbral_dias, 0), "."), fig.width=5.6, fig.height=4}
 # Figura 5: curva global con tabla de riesgo ===========================================================================
 ggsurvplot(km_global,
            conf.int   = TRUE,
@@ -430,8 +439,11 @@ ggsurvplot(km_global,
            xlab       = "Días desde la última compra",
            ylab       = "Probabilidad de permanencia",
            legend     = "none",
+           legend.title = "",
+           risk.table.title = "Clientes en riesgo",
+           surv.median.line = "none",
            ggtheme      = tema_reporte,
-           tables.theme = tema_reporte)
+           tables.theme = tema_reporte + theme(plot.title = element_text(face = "bold", size = 9)))
 ```
 
 Las comparaciones por segmento (Figura \@ref(fig:km-segmentos)) confirman la
@@ -446,14 +458,14 @@ diferencia es estadísticamente detectable.
 ```{r km-segmentos, fig.cap=paste0("Permanencia según satisfacción y respuesta a promociones: las curvas se traslapan (log-rank p=", num(p_lr_sat, 2), " y p=", num(p_lr_prom, 2), "); ningún segmento retiene mejor que otro."), fig.width=6.4, fig.height=3.2}
 # Figura 6: Kaplan–Meier por segmentos =================================================================================
 g_sat <- ggsurvplot(km_sat, data = datos, pval = TRUE,
-                    palette = c(col_fuga, col_retencion),
+                    palette = c(col_neutro, col_acento),
                     xlab = "Días", ylab = "Permanencia",
                     legend.labs = c("Satisfacción baja", "Satisfacción alta"),
                     ggtheme = tema_reporte)$plot +
   theme(legend.position = "bottom")
 
 g_prom <- ggsurvplot(km_prom, data = datos, pval = TRUE,
-                     palette = c(col_neutro, col_fuga, col_retencion),
+                     palette = colores_perfil[1:3],
                      xlab = "Días", ylab = NULL,
                      legend.labs = c("Ignoró promo", "Respondió", "Canceló suscripción"),
                      ggtheme = tema_reporte)$plot +
