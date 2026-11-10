@@ -108,7 +108,9 @@ datos <- read.csv("Data/online_retail_customer_churn.csv")
 datos$Email_Opt_In       <- as.logical(datos$Email_Opt_In)          # texto "True/False" -> lógico
 datos$Target_Churn       <- as.logical(datos$Target_Churn)          # texto "True/False" -> lógico
 datos$Gender             <- factor(datos$Gender)
-datos$Promotion_Response <- factor(datos$Promotion_Response)
+datos$Promotion_Response <- factor(datos$Promotion_Response,
+                                   levels = c("Ignored", "Responded", "Unsubscribed"),
+                                   labels = c("Ignoró promo", "Respondió", "Canceló suscripción"))
 datos$evento             <- ifelse(datos$Target_Churn, 1, 0)        # 1 = fuga, 0 = retención (censura)
 datos$tiempo             <- datos$Last_Purchase_Days_Ago            # días de inactividad
 datos$satisfaccion_grupo <- factor(ifelse(datos$Satisfaction_Score <= 2, "Baja", "Alta"),
@@ -125,6 +127,17 @@ dias_max     <- max(datos$tiempo)
 ritmo_dia    <- num_eventos / dias_max   # fuga promedio por día de inactividad (clientes/día)
 n_baja       <- sum(datos$satisfaccion_grupo == "Baja")
 n_alta      <- sum(datos$satisfaccion_grupo == "Alta")
+
+# Rangos del perfil para el texto (sin números a mano)
+edad_rango   <- range(datos$Age)
+ingreso_rango <- range(datos$Annual_Income)
+antig_rango  <- range(datos$Years_as_Customer)
+compras_rango <- range(datos$Num_of_Purchases)
+gasto_rango  <- range(datos$Total_Spend)
+trans_rango  <- range(datos$Average_Transaction_Amount)
+
+# Resumen de género (proporciones)
+props_genero <- prop.table(table(datos$Gender))
 outliers     <- sapply(select(datos, where(is.numeric)), function(x){
   q <- quantile(x, c(.25, .75)); sum(x < q[1] - 1.5 * (q[2] - q[1]) | x > q[2] + 1.5 * (q[2] - q[1]))
 })
@@ -155,22 +168,31 @@ cf            <- summary(modelo_cox)$coefficients
 ci            <- exp(confint(modelo_cox))
 cox_min_p     <- min(cf[, 5])
 ph_global_p   <- cox.zph(modelo_cox)$table["GLOBAL", "p"]
-hr_prom_resp  <- exp(cf["Promotion_ResponseResponded", 1])
-ic_prom_resp  <- exp(confint(modelo_cox)["Promotion_ResponseResponded", ])
+hr_prom_resp  <- exp(cf[grep("^Promotion_ResponseRespondió$", rownames(cf)), 1])
+ic_prom_resp  <- exp(confint(modelo_cox)[grep("^Promotion_ResponseRespondió$", rownames(cf)), ])
+
+# HR re-escalados a unidades interpretables: gasto total y transacción promedio por cada 1,000 USD
+# (el efecto por 1 USD es invisible a 3 decimales; el escalar es exp(beta * 1000))
+# El ingreso ya viene en miles de USD y las demás variables conservan su escala (años, conteos, 1-5)
+escala <- c(1, 1, 1000, 1, 1, 1000, 1, 1, 1, 1, 1, 1)
+hr_tbl  <- exp(cf[, 1] * escala)
+ic_tbl  <- exp(ci * escala)
+nombres <- c("Edad", "Ingreso anual (miles USD)", "Gasto por cada 1,000 USD",
+             "Antigüedad (años)", "Compras al año", "Transacción por cada 1,000 USD",
+             "Devoluciones", "Contactos a soporte", "Satisfacción (1–5)",
+             "Aceptó correos (sí vs no)", "Respondió promo (vs ignoró)",
+             "Canceló promo (vs ignoró)")
 
 tabla_cox_fmt <- data.frame(
-  Variable = c("Edad", "Ingreso anual (miles USD)", "Gasto total (USD)",
-               "Antigüedad (años)", "Compras al año", "Transacción promedio (USD)",
-               "Devoluciones", "Contactos a soporte", "Satisfacción (1–5)",
-               "Aceptó correos (sí vs no)", "Respondió promo (vs ignoró)",
-               "Canceló promo (vs ignoró)"),
-  HR       = formatC(exp(cf[, 1]),  format = "f", digits = 3),
-  IC       = sprintf("[%.3f, %.3f]", ci[, 1], ci[, 2]),
+  Variable = nombres,
+  HR       = formatC(hr_tbl, format = "f", digits = 3),
+  IC       = sprintf("[%.3f, %.3f]", ic_tbl[, 1], ic_tbl[, 2]),
   p        = formatC(cf[, 5], format = "f", digits = 3)
 )
 rownames(tabla_cox_fmt) <- NULL
 
 # Proporción de fuga por ventana del año (para la afirmación "sin tendencia")
+# Cortes: 0, 90, 180, 270, 300, 330 y 364 días (los últimos estrechos para ver la cola)
 ventanas   <- cut(datos$tiempo, c(0, 90, 180, 270, 300, 330, 364),
                   labels = c("0–90", "91–180", "181–270", "271–300", "301–330", "331–364"))
 pct_ventana <- tapply(datos$evento, ventanas, mean)
@@ -264,12 +286,16 @@ contra una fecha de baja declarada — se retoma en las conclusiones.
 
 # ¿Quiénes son y cómo compran? (exploración)
 
-El perfil del cliente es amplio y balanceado: edades de 18 a 69 años, ingresos
-anuales de 20 a 200 miles de dólares, antigüedad de 1 a 19 años y género
-repartido en tres tercios (Figura \@ref(fig:perfil)). El comportamiento de
-compra es igualmente disperso y sin valores extremos: de 1 a 99 compras al año,
-gasto total de 109 a 9,999 dólares y transacciones promedio de 10 a 500
-dólares (Figura \@ref(fig:extremos)).
+El perfil del cliente es amplio y balanceado: edades de
+`r num(edad_rango[1], 0)` a `r num(edad_rango[2], 0)` años, ingresos anuales de
+`r num(ingreso_rango[1], 0)` a `r num(ingreso_rango[2], 0)` miles de dólares,
+antigüedad de `r num(antig_rango[1], 0)` a `r num(antig_rango[2], 0)` años y
+género repartido en tres tercios (Figura \@ref(fig:perfil)). El comportamiento
+de compra es igualmente disperso y sin valores extremos: de
+`r num(compras_rango[1], 0)` a `r num(compras_rango[2], 0)` compras al año,
+gasto total de `r num(gasto_rango[1], 0)` a `r num(gasto_rango[2], 0)` dólares
+y transacciones promedio de `r num(trans_rango[1], 0)` a
+`r num(trans_rango[2], 0)` dólares (Figura \@ref(fig:extremos)).
 
 ```{r perfil, fig.cap="Perfil de los clientes: ninguna característica demográfica concentra a la base; el público es heterogéneo y balanceado.", fig.width=6.4, fig.height=4.4}
 # Figura 1: perfil demográfico y económico (4 paneles) =================================================================
@@ -301,19 +327,23 @@ p_antiguedad <- ggplot(datos, aes(Years_as_Customer)) +
 p_caja_spend <- ggplot(datos, aes(y = Total_Spend)) +
   geom_boxplot(fill = col_neutro, color = col_neutro) +
   scale_y_continuous(labels = label_comma()) +
-  labs(title = "Gasto total anual", y = "USD", x = NULL)
+  labs(title = "Gasto total anual", y = "USD", x = NULL) +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
 p_caja_compras <- ggplot(datos, aes(y = Num_of_Purchases)) +
   geom_boxplot(fill = col_neutro, color = col_neutro) +
-  labs(title = "Compras al año", y = "Compras", x = NULL)
+  labs(title = "Compras al año", y = "Compras", x = NULL) +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
 p_caja_trans <- ggplot(datos, aes(y = Average_Transaction_Amount)) +
   geom_boxplot(fill = col_neutro, color = col_neutro) +
-  labs(title = "Transacción promedio", y = "USD", x = NULL)
+  labs(title = "Transacción promedio", y = "USD", x = NULL) +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
 p_caja_dias <- ggplot(datos, aes(y = Last_Purchase_Days_Ago)) +
   geom_boxplot(fill = col_acento, color = col_acento) +
-  labs(title = "Días desde la última compra", y = "Días", x = NULL)
+  labs(title = "Días desde la última compra", y = "Días", x = NULL) +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
 (p_caja_spend + p_caja_compras) / (p_caja_trans + p_caja_dias) +
   plot_annotation(theme = tema_reporte)
@@ -367,6 +397,7 @@ p_prom <- ggplot(datos, aes(Promotion_Response, fill = Estado)) +
   geom_bar(position = "fill", color = "white") +
   scale_fill_manual(values = colores_churn) +
   scale_y_continuous(labels = label_percent()) +
+  scale_x_discrete(labels = c("Ignoró\npromo", "Respondió", "Canceló\nsuscripción")) +
   labs(title = "Respuesta a promociones", x = NULL, y = "Proporción") +
   theme(legend.position = "top")
 
@@ -386,9 +417,11 @@ cola de la distribución de inactividad (Figura
 `r num(100 * p180)`% al día 180; la mediana de "sobrevivencia" es de
 `r num(mediana_dias, 0)` días (IC 95%: `r num(ic_mediana[1], 0)`–`r num(ic_mediana[2], 0)`),
 es decir, la mitad de la fuga anual ocurre alrededor de los 9 meses de
-inactividad.
+inactividad. Parte de la aceleración final de la curva refleja el cierre de la
+ventana de observación (un cliente solo puede acumular hasta 364 días de
+inactividad) y no un cambio de comportamiento.
 
-```{r km-global, fig.cap="Kaplan–Meier global: la permanencia cae de manera pareja la mayor parte del año y se acelera al final (cola de inactividad); la mitad de la fuga acumulada ocurre cerca del día 269. La acción de retención debe activarse antes del día 180.", fig.width=5.6, fig.height=4}
+```{r km-global, fig.cap=paste0("Kaplan–Meier global: la permanencia cae de manera pareja la mayor parte del año y se acelera al final (cola de inactividad); la mitad de la fuga acumulada ocurre cerca del día ", num(mediana_dias, 0), ". La acción de retención debe activarse antes del día ", num(umbral_dias, 0), "."), fig.width=5.6, fig.height=4}
 # Figura 5: curva global con tabla de riesgo ===========================================================================
 ggsurvplot(km_global,
            conf.int   = TRUE,
@@ -402,13 +435,15 @@ ggsurvplot(km_global,
 ```
 
 Las comparaciones por segmento (Figura \@ref(fig:km-segmentos)) confirman la
-segunda pregunta: las curvas de satisfacción baja (`r num(n_baja, 0)` clientes)
-y alta (`r num(n_alta, 0)`) se traslapan, con prueba log-rank
-p = `r num(p_lr_sat, 3)`; lo mismo ocurre entre quienes respondieron, ignoraron
-o se dieron de baja de las promociones (p = `r num(p_lr_prom, 3)`). Ninguna
+segunda pregunta. Para la satisfacción se prueba H0: la permanencia es igual
+entre clientes con satisfacción baja y alta, contra la alternativa de que
+difiere; las curvas de satisfacción baja (`r num(n_baja, 0)` clientes) y alta
+(`r num(n_alta, 0)`) se traslapan (log-rank p = `r num(p_lr_sat, 3)`). La misma
+prueba entre quienes respondieron, ignoraron o cancelaron su suscripción a las
+promociones tampoco detecta diferencias (p = `r num(p_lr_prom, 3)`). Ninguna
 diferencia es estadísticamente detectable.
 
-```{r km-segmentos, fig.cap="Permanencia según satisfacción y respuesta a promociones: las curvas se traslapan (log-rank p=0.23 y p=0.51); ningún segmento retiene mejor que otro.", fig.width=6.4, fig.height=3.2}
+```{r km-segmentos, fig.cap=paste0("Permanencia según satisfacción y respuesta a promociones: las curvas se traslapan (log-rank p=", num(p_lr_sat, 2), " y p=", num(p_lr_prom, 2), "); ningún segmento retiene mejor que otro."), fig.width=6.4, fig.height=3.2}
 # Figura 6: Kaplan–Meier por segmentos =================================================================================
 g_sat <- ggsurvplot(km_sat, data = datos, pval = TRUE,
                     palette = c(col_fuga, col_retencion),
@@ -432,10 +467,11 @@ estima cuánto multiplica cada característica el riesgo de fuga manteniendo el
 resto constante (Tabla \@ref(tab:cox-tabla)). La lectura ejecutiva de la tabla:
 **ningún hazard ratio se aleja de 1.0 con confianza** — el intervalo de cada
 variable incluye al 1.0 — y la significancia más cercana (gasto total,
-p = `r num(cox_min_p, 2)`) no alcanza el umbral convencional de 0.05. El
-supuesto de riesgos proporcionales se verifica (prueba global
-p = `r num(ph_global_p, 2)`), de modo que las estimaciones son válidas; lo que
-dicen es simplemente que no hay efectos.
+p = `r num(cox_min_p, 3)`) no alcanza el umbral convencional de 0.05. Para
+validar las estimaciones se prueba H0: los riesgos proporcionales se mantienen
+en el tiempo (supuesto del modelo); **no se detecta violación del supuesto**
+(prueba global p = `r num(ph_global_p, 2)`), de modo que las estimaciones son
+válidas; lo que dicen es simplemente que no hay efectos.
 
 ```{r cox-tabla}
 # Tabla del modelo de Cox (HR legibles) ================================================================================
@@ -475,7 +511,7 @@ medirse las campañas de retención.
 (`r num(dias_min, 0)`–`r num(dias_max, 0)` días), evento = `Target_Churn`
 (`r num(num_eventos, 0)` fugas en `r num(num_clientes, 0)` clientes); censurados a la derecha
 sin fuga. Cox con todas las covariables de la Tabla 2: sin HR significativo;
-`cox.zph` global p = `r num(ph_global_p, 2)` (supuesto de riesgos proporcionales
-satisfecho). La base muestra patrones compatibles con datos simulados
+`cox.zph` global p = `r num(ph_global_p, 2)` (sin violación del supuesto de
+riesgos proporcionales). La base muestra patrones compatibles con datos simulados
 (varianzas planas, nulas correlaciones), por lo que las conclusiones de negocio
 son provisionales mientras la instrumentación no mejore.

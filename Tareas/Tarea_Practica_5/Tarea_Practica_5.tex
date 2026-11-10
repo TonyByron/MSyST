@@ -385,12 +385,16 @@ contra una fecha de baja declarada --- se retoma en las conclusiones.
 
 \section{¿Quiénes son y cómo compran? (exploración)}\label{quiuxe9nes-son-y-cuxf3mo-compran-exploraciuxf3n}
 
-El perfil del cliente es amplio y balanceado: edades de 18 a 69 años, ingresos
-anuales de 20 a 200 miles de dólares, antigüedad de 1 a 19 años y género
-repartido en tres tercios (Figura \ref{fig:perfil}). El comportamiento de
-compra es igualmente disperso y sin valores extremos: de 1 a 99 compras al año,
-gasto total de 109 a 9,999 dólares y transacciones promedio de 10 a 500
-dólares (Figura \ref{fig:extremos}).
+El perfil del cliente es amplio y balanceado: edades de
+18 a 69 años, ingresos anuales de
+20 a 200 miles de dólares,
+antigüedad de 1 a 19 años y
+género repartido en tres tercios (Figura \ref{fig:perfil}). El comportamiento
+de compra es igualmente disperso y sin valores extremos: de
+1 a 99 compras al año,
+gasto total de 109 a 10,000 dólares
+y transacciones promedio de 10 a
+500 dólares (Figura \ref{fig:extremos}).
 
 \begin{figure}
 
@@ -455,7 +459,9 @@ cola de la distribución de inactividad (Figura
 70.4\% al día 180; la mediana de ``sobrevivencia'' es de
 269 días (IC 95\%: 255--283),
 es decir, la mitad de la fuga anual ocurre alrededor de los 9 meses de
-inactividad.
+inactividad. Parte de la aceleración final de la curva refleja el cierre de la
+ventana de observación (un cliente solo puede acumular hasta 364 días de
+inactividad) y no un cambio de comportamiento.
 
 \begin{figure}
 
@@ -467,10 +473,12 @@ inactividad.
 \end{figure}
 
 Las comparaciones por segmento (Figura \ref{fig:km-segmentos}) confirman la
-segunda pregunta: las curvas de satisfacción baja (394 clientes)
-y alta (606) se traslapan, con prueba log-rank
-p = 0.230; lo mismo ocurre entre quienes respondieron, ignoraron
-o se dieron de baja de las promociones (p = 0.509). Ninguna
+segunda pregunta. Para la satisfacción se prueba H0: la permanencia es igual
+entre clientes con satisfacción baja y alta, contra la alternativa de que
+difiere; las curvas de satisfacción baja (394 clientes) y alta
+(606) se traslapan (log-rank p = 0.230). La misma
+prueba entre quienes respondieron, ignoraron o cancelaron su suscripción a las
+promociones tampoco detecta diferencias (p = 0.509). Ninguna
 diferencia es estadísticamente detectable.
 
 \begin{figure}
@@ -487,10 +495,11 @@ estima cuánto multiplica cada característica el riesgo de fuga manteniendo el
 resto constante (Tabla \ref{tab:cox-tabla}). La lectura ejecutiva de la tabla:
 \textbf{ningún hazard ratio se aleja de 1.0 con confianza} --- el intervalo de cada
 variable incluye al 1.0 --- y la significancia más cercana (gasto total,
-p = 0.05) no alcanza el umbral convencional de 0.05. El
-supuesto de riesgos proporcionales se verifica (prueba global
-p = 0.77), de modo que las estimaciones son válidas; lo que
-dicen es simplemente que no hay efectos.
+p = 0.054) no alcanza el umbral convencional de 0.05. Para
+validar las estimaciones se prueba H0: los riesgos proporcionales se mantienen
+en el tiempo (supuesto del modelo); \textbf{no se detecta violación del supuesto}
+(prueba global p = 0.77), de modo que las estimaciones son
+válidas; lo que dicen es simplemente que no hay efectos.
 
 \begin{table}[!h]
 \centering
@@ -501,29 +510,29 @@ dicen es simplemente que no hay efectos.
 \hline
 \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Variable}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{HR}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{IC}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{p}}}\\
 \hline
-\cellcolor[HTML]{F1FAEE}{Edad} & \cellcolor[HTML]{F1FAEE}{1.000} & \cellcolor[HTML]{F1FAEE}{[0.994, 1.005]} & \cellcolor[HTML]{F1FAEE}{0.933}\\
+\cellcolor[HTML]{F1FAEE}{Edad} & \cellcolor[HTML]{F1FAEE}{1.000} & \cellcolor[HTML]{F1FAEE}{[2.703, 2.733]} & \cellcolor[HTML]{F1FAEE}{0.933}\\
 \hline
-\cellcolor[HTML]{F1FAEE}{Ingreso anual (miles USD)} & \cellcolor[HTML]{F1FAEE}{0.998} & \cellcolor[HTML]{F1FAEE}{[0.997, 1.000]} & \cellcolor[HTML]{F1FAEE}{0.064}\\
+\cellcolor[HTML]{F1FAEE}{Ingreso anual (miles USD)} & \cellcolor[HTML]{F1FAEE}{0.998} & \cellcolor[HTML]{F1FAEE}{[2.710, 2.719]} & \cellcolor[HTML]{F1FAEE}{0.064}\\
 \hline
-\cellcolor[HTML]{F1FAEE}{Gasto total (USD)} & \cellcolor[HTML]{F1FAEE}{1.000} & \cellcolor[HTML]{F1FAEE}{[1.000, 1.000]} & \cellcolor[HTML]{F1FAEE}{0.054}\\
+\cellcolor[HTML]{F1FAEE}{Gasto por cada 1,000 USD} & \cellcolor[HTML]{F1FAEE}{1.031} & \cellcolor[HTML]{F1FAEE}{[Inf, Inf]} & \cellcolor[HTML]{F1FAEE}{0.054}\\
 \hline
-\cellcolor[HTML]{F1FAEE}{Antigüedad (años)} & \cellcolor[HTML]{F1FAEE}{0.992} & \cellcolor[HTML]{F1FAEE}{[0.977, 1.008]} & \cellcolor[HTML]{F1FAEE}{0.323}\\
+\cellcolor[HTML]{F1FAEE}{Antigüedad (años)} & \cellcolor[HTML]{F1FAEE}{0.992} & \cellcolor[HTML]{F1FAEE}{[2.655, 2.740]} & \cellcolor[HTML]{F1FAEE}{0.323}\\
 \hline
-\cellcolor[HTML]{F1FAEE}{Compras al año} & \cellcolor[HTML]{F1FAEE}{1.000} & \cellcolor[HTML]{F1FAEE}{[0.997, 1.003]} & \cellcolor[HTML]{F1FAEE}{0.795}\\
+\cellcolor[HTML]{F1FAEE}{Compras al año} & \cellcolor[HTML]{F1FAEE}{1.000} & \cellcolor[HTML]{F1FAEE}{[2.709, 2.725]} & \cellcolor[HTML]{F1FAEE}{0.795}\\
 \hline
-\cellcolor[HTML]{F1FAEE}{Transacción promedio (USD)} & \cellcolor[HTML]{F1FAEE}{1.000} & \cellcolor[HTML]{F1FAEE}{[0.999, 1.000]} & \cellcolor[HTML]{F1FAEE}{0.251}\\
+\cellcolor[HTML]{F1FAEE}{Transacción por cada 1,000 USD} & \cellcolor[HTML]{F1FAEE}{0.709} & \cellcolor[HTML]{F1FAEE}{[Inf, Inf]} & \cellcolor[HTML]{F1FAEE}{0.251}\\
 \hline
-\cellcolor[HTML]{F1FAEE}{Devoluciones} & \cellcolor[HTML]{F1FAEE}{0.987} & \cellcolor[HTML]{F1FAEE}{[0.958, 1.017]} & \cellcolor[HTML]{F1FAEE}{0.389}\\
+\cellcolor[HTML]{F1FAEE}{Devoluciones} & \cellcolor[HTML]{F1FAEE}{0.987} & \cellcolor[HTML]{F1FAEE}{[2.606, 2.765]} & \cellcolor[HTML]{F1FAEE}{0.389}\\
 \hline
-\cellcolor[HTML]{F1FAEE}{Contactos a soporte} & \cellcolor[HTML]{F1FAEE}{1.031} & \cellcolor[HTML]{F1FAEE}{[0.970, 1.096]} & \cellcolor[HTML]{F1FAEE}{0.332}\\
+\cellcolor[HTML]{F1FAEE}{Contactos a soporte} & \cellcolor[HTML]{F1FAEE}{1.031} & \cellcolor[HTML]{F1FAEE}{[2.637, 2.991]} & \cellcolor[HTML]{F1FAEE}{0.332}\\
 \hline
-\cellcolor[HTML]{F1FAEE}{Satisfacción (1–5)} & \cellcolor[HTML]{F1FAEE}{1.000} & \cellcolor[HTML]{F1FAEE}{[0.940, 1.064]} & \cellcolor[HTML]{F1FAEE}{0.997}\\
+\cellcolor[HTML]{F1FAEE}{Satisfacción (1–5)} & \cellcolor[HTML]{F1FAEE}{1.000} & \cellcolor[HTML]{F1FAEE}{[2.560, 2.898]} & \cellcolor[HTML]{F1FAEE}{0.997}\\
 \hline
-\cellcolor[HTML]{F1FAEE}{Aceptó correos (sí vs no)} & \cellcolor[HTML]{F1FAEE}{0.932} & \cellcolor[HTML]{F1FAEE}{[0.784, 1.108]} & \cellcolor[HTML]{F1FAEE}{0.425}\\
+\cellcolor[HTML]{F1FAEE}{Aceptó correos (sí vs no)} & \cellcolor[HTML]{F1FAEE}{0.932} & \cellcolor[HTML]{F1FAEE}{[2.191, 3.028]} & \cellcolor[HTML]{F1FAEE}{0.425}\\
 \hline
-\cellcolor[HTML]{F1FAEE}{Respondió promo (vs ignoró)} & \cellcolor[HTML]{F1FAEE}{1.045} & \cellcolor[HTML]{F1FAEE}{[0.842, 1.297]} & \cellcolor[HTML]{F1FAEE}{0.691}\\
+\cellcolor[HTML]{F1FAEE}{Respondió promo (vs ignoró)} & \cellcolor[HTML]{F1FAEE}{1.045} & \cellcolor[HTML]{F1FAEE}{[2.321, 3.657]} & \cellcolor[HTML]{F1FAEE}{0.691}\\
 \hline
-\cellcolor[HTML]{F1FAEE}{Canceló promo (vs ignoró)} & \cellcolor[HTML]{F1FAEE}{0.938} & \cellcolor[HTML]{F1FAEE}{[0.757, 1.162]} & \cellcolor[HTML]{F1FAEE}{0.557}\\
+\cellcolor[HTML]{F1FAEE}{Canceló promo (vs ignoró)} & \cellcolor[HTML]{F1FAEE}{0.938} & \cellcolor[HTML]{F1FAEE}{[2.131, 3.197]} & \cellcolor[HTML]{F1FAEE}{0.557}\\
 \hline
 \end{tabular}
 \end{table}
@@ -560,8 +569,8 @@ medirse las campañas de retención.
 (1--364 días), evento = \texttt{Target\_Churn}
 (526 fugas en 1,000 clientes); censurados a la derecha
 sin fuga. Cox con todas las covariables de la Tabla 2: sin HR significativo;
-\texttt{cox.zph} global p = 0.77 (supuesto de riesgos proporcionales
-satisfecho). La base muestra patrones compatibles con datos simulados
+\texttt{cox.zph} global p = 0.77 (sin violación del supuesto de
+riesgos proporcionales). La base muestra patrones compatibles con datos simulados
 (varianzas planas, nulas correlaciones), por lo que las conclusiones de negocio
 son provisionales mientras la instrumentación no mejore.
 
