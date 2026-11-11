@@ -301,31 +301,25 @@ Divvy opera la renta de bicicletas en línea y quiere saber qué
 modificación a su servicio mejoraría la rentabilidad. El análisis de la
 información recolectada en el último año (1,000 clientes)
 arroja un hallazgo incómodo pero accionable: \textbf{ningún rasgo observable del
-cliente anticipa su fuga} --- edad, ingreso, gasto, devoluciones, soporte,
-satisfacción y respuesta a promociones discriminan igual entre quienes abandonan
-y quienes no. El riesgo es de \textbf{52.6\% en el año, presente
-todo el año con aceleración al final}.
+cliente anticipa su fuga}.
 
 La consecuencia directa para el negocio: esperar señales para retener no
 funciona con estos datos, así que la acción recomendada es un
-\textbf{ciclo de recuperación de clientes durante sus primeros 6 meses de inactividad} ---
-antes del día 180 desde su última compra, cuando la permanencia
-aún es del 70.4\% ---,
+\textbf{ciclo de recuperación de clientes durante sus primeros 6 meses de inactividad},
 más un \textbf{rediseño del registro de datos de los clientes}
 para que el siguiente análisis sí pueda detectar segmentos de riesgo.
 
 \section{Planteamiento del problema y propuesta}\label{planteamiento-del-problema-y-propuesta}
 
-Divvy renta bicicletas a una base amplia de usuarios cuya actividad se mide
-por compras del servicio; el
+Divvy renta bicicletas a una base amplia de usuarios; el
 servicio incluye promociones, atención a soporte y comunicación por correo.
 La dirección pregunta qué cambiar en el servicio para retener más clientes:
 cada punto de retención preserva el ingreso que el cliente genera sin costo de
 adquisición.
 
 Realizamos un \textbf{análisis de supervivencia}, que estudia
-\emph{cuánto tarda en ocurrir un evento}. Aquí el evento es la \emph{fuga}
-(el cliente marcado como abandonado) y el tiempo es la \emph{inactividad}:
+\textbf{\emph{cuánto tarda en ocurrir un evento}}. Aquí el \emph{evento} es la \textbf{\emph{fuga}}
+(el cliente marcado como abandonado) y el \emph{tiempo} es la \textbf{\emph{inactividad}}:
 los días transcurridos desde su última compra.
 Esta técnica aporta dos herramientas útiles para decidir:
 
@@ -389,26 +383,51 @@ explícita, y son las que definen el análisis:
 \end{longtable}
 \endgroup{}
 
-La construcción del \textbf{par de supervivencia} merece nota explícita: el \emph{evento}
-es \texttt{Target\_Churn} (1 = fugado) y el \emph{tiempo} es \texttt{Last\_Purchase\_Days\_Ago}
-(inactividad al cierre del año). Los clientes sin fuga quedan \textbf{censurados}:
+La construcción del \textbf{par de supervivencia} merece nota explícita:
+
+\begin{itemize}
+\tightlist
+\item
+  El \emph{evento} es \texttt{Target\_Churn} (1 = fugado).
+\item
+  El \emph{tiempo} es \texttt{Last\_Purchase\_Days\_Ago} (inactividad al cierre del año).
+\end{itemize}
+
+Los clientes sin fuga quedan \textbf{censurados}:
 sabemos que seguían activos hasta su última compra, entre los días
 1 y 364 del año, pero no su vida completa.
-La limitación que esto impone --- la fuga se mide contra la última compra y no
-contra una fecha de baja declarada --- se retoma en las conclusiones.
+La fuga se mide contra la última compra y no
+contra una fecha de baja declarada.
 
 \section{¿Quiénes son y cómo compran? (exploración)}\label{quiuxe9nes-son-y-cuxf3mo-compran-exploraciuxf3n}
 
-El perfil del cliente es amplio y balanceado: edades de
-18 a 69 años, ingresos anuales de
-20 a 200 miles de dólares,
-antigüedad de 1 a 19 años y
-género repartido en tres tercios (Figura \ref{fig:perfil}). El comportamiento
-de compra es igualmente disperso y sin valores extremos: de
-1 a 99 compras al año,
-gasto total de 109 a 10,000 dólares
-y transacciones promedio de 10 a
-500 dólares (Figura \ref{fig:extremos}).
+El perfil del cliente es amplio y balanceado:
+
+\begin{itemize}
+\tightlist
+\item
+  Edades de 18 a 69 años.
+\item
+  Ingresos anuales de 20 a 200 (en miles de dólares).
+\item
+  Antigüedad de 1 a 19 años.
+\item
+  Género repartido en tres tercios (Figura \ref{fig:perfil}).
+\end{itemize}
+
+El comportamiento
+de compra es igualmente disperso y sin valores extremos:
+
+\begin{itemize}
+\tightlist
+\item
+  De 1 a 99 compras al año.
+\item
+  Gasto total de 109 a 10,000 dólares.
+\item
+  Transacciones promedio de 10 a 500
+  dólares (Figura \ref{fig:extremos}).
+\end{itemize}
 
 \begin{figure}
 
@@ -425,14 +444,13 @@ y transacciones promedio de 10 a
 
 }
 
-\caption{Diagramas de caja con cada cliente como punto, coloreado por su estado (rojo = fugado, verde = activo): no hay valores extremos fuera de 1.5×IQR en ninguna variable; no se requirió truncado ni winsorización.}\label{fig:extremos}
+\caption{Diagramas de caja con cada cliente como punto, coloreado por su estado (rojo = fugado, verde = activo): no hay valores extremos en ninguna variable.}\label{fig:extremos}
 \end{figure}
 
-Las variables numéricas entre sí prácticamente no se correlacionan
+Las variables numéricas prácticamente no se correlacionan entre sí
 (Figura \ref{fig:correlaciones}): no existe un ``cliente grande'' (mucho ingreso
 y mucho gasto, muchas compras) ni combinaciones de variables que agrupen a la
-base. Esta primera señal --- la base no tiene segmentos naturales --- anticipa el
-hallazgo central del análisis de supervivencia.
+base. Esta primera señal anticipa el hallazgo central del análisis de supervivencia.
 
 \begin{figure}
 
@@ -467,15 +485,16 @@ primera pregunta: la fuga \textbf{no se concentra en ningún periodo}. El abando
 acumula a un ritmo promedio de 1.45 clientes por día: el
 riesgo es plano durante la mayor parte del año y se acelera al final, en la
 cola de la distribución de inactividad (Figura
-\ref{fig:km-global}). La permanencia es del
+\ref{fig:km-global}).
+
+La permanencia individual es del
 94.9\% al día 30, 85.9\% al día 90 y
-70.4\% al día 180; la mediana de ``sobrevivencia'' es de
-269 días (IC 95\%: 255--283),
-es decir, la mitad de la base habría fugado hacia los
-9 meses de inactividad.
+70.4\% al día 180 (desde la última compra del cliente); la mediana de ``sobrevivencia'' es de
+269 días,
+es decir, \textbf{la mitad de la base habría fugado hacia los
+9 meses de inactividad}.
 Parte de la aceleración final de la curva refleja el cierre de la
-ventana de observación (un cliente solo puede acumular hasta 364 días de
-inactividad) y no un cambio de comportamiento.
+ventana de observación y no un cambio de comportamiento.
 
 \begin{figure}
 
@@ -486,14 +505,15 @@ inactividad) y no un cambio de comportamiento.
 \caption{Kaplan–Meier global: la permanencia cae de manera pareja la mayor parte del año y se acelera al final (cola de inactividad); la mitad de la base habría fugado hacia el día 269. La acción de retención debe activarse antes del día 180.}\label{fig:km-global}
 \end{figure}
 
-Las comparaciones por segmento (Figura \ref{fig:km-segmentos}) confirman la
-segunda pregunta. Para la satisfacción se prueba H0: la permanencia es igual
-entre clientes con satisfacción baja y alta, contra la alternativa de que
-difiere; las curvas de satisfacción baja (394 clientes) y alta
-(606) se traslapan (log-rank p = 0.230). La misma
-prueba entre quienes respondieron, ignoraron o cancelaron su suscripción a las
-promociones tampoco detecta diferencias (p = 0.509). Ninguna
-diferencia es estadísticamente detectable.
+Las comparaciones por segmento responden la segunda pregunta: no se distingue
+un segmento que fuga más rápido. Clientes con satisfacción baja
+(394) y alta (606) no muestran diferencias de
+permanencia (log-rank p = 0.230); entre quienes respondieron,
+ignoraron o cancelaron su suscripción a las promociones tampoco se detectan
+(p = 0.509).
+
+\textbf{Nota técnica.} Contraste de igual permanencia entre grupos (prueba log-rank;
+H0 = misma curva de supervivencia); ningún p alcanza 0.05.
 
 \begin{figure}
 
@@ -501,7 +521,7 @@ diferencia es estadísticamente detectable.
 
 }
 
-\caption{Permanencia según satisfacción y respuesta a promociones: las curvas se traslapan (log-rank p=0.23 y p=0.51); ningún segmento retiene mejor que otro.}\label{fig:km-segmentos}
+\caption{Permanencia según satisfacción y respuesta a promociones: las curvas se traslapan (log-rank p=0.230 y p=0.509); ningún segmento retiene mejor que otro.}\label{fig:km-segmentos}
 \end{figure}
 
 Para ponderar todas las variables a la vez, ajustamos el modelo de Cox, que

@@ -91,3 +91,128 @@ corregido: 7/9 puntos ✅; ⚠️ solo en diseño de gráficas (eje x sin sentid
 Fig. 2) y en hipótesis H0/alternativa no redactadas; código y replicabilidad
 ✅. Sus hallazgos se consolidan con los 6 informativos del JD en un plan de
 resolución por impacto (pendiente de aprobación de Tony).
+
+L6 (2026-11-10): ciclo 2. asesor-reporte detecta bug introduced en el
+re-escalado P3: ic_tbl <- exp(ci * escala) con ci ya exponenciado = doble
+exp() -> Tabla 2 con IC invalidos ([2.703, 2.733] Edad; [Inf, Inf] en filas
+escaladas), contradice el texto "todo intervalo contiene al 1.0". Fix
+derivado (una linea): ic_tbl <- exp(confint(modelo_cox) * escala); IC
+corregidos verificados en R read-only: todos contienen 1.0. Fix se aplica
+via jd-fix-agent cuando los jueces A/B (en curso) congelen sus hallazgos.
+
+L7 (2026-11-10): ciclo 2 completo. Descubrimiento: 1 BLOCKER congelado
+(JD-A-001 doble exp() en IC de Tabla 2, corroborado por ambos jueces y el
+asesor) + 4 informativos nuevos (JD-B-002 mediana interpretada de forma
+engañosa x3, JD-A-002 risk table en inglés, JD-A-003/B-003 devoluciones
+citadas sin figura, JD-B-004 semántica de color en Fig. 6, + Fig. 3 densa del
+asesor). Fix ronda 1 de 2 (hash 0ce1cf73...): ic_tbl <- ci^escala; 12 IC
+correctos, todos contienen 1.0, 0 Inf. Re-juzgamiento: verified por ambos.
+Verificación final: 7 pp, 0 Inf, 0 Missing character, 0 refs rotas.
+JUDGMENT: APPROVED (ciclo 2, ronda 1 de 2, sin escalamiento). Commit:
+"Corrige doble exponenciacion en IC de la Tabla 2". Pendientes informativos
+reportados a Tony con plan por impacto.
+
+L8 (2026-11-10): ciclo 3 completo tras aplicar los 5 informativos (commit
+1c1261b). Descubrimiento: CERO severos en ambos jueces — solo 1 WARNING
+(etiqueta "All" en risk table) y SUGGESTION cosméticas (borde IC de Gasto
+1.000 vs 0.9995 real, "día 180" literal, "Practica" sin tilde en portada,
+verde de retención en "Canceló suscripción") + 3 de redacción del asesor
+(caption Tabla 2 "incluye o roza al 1.0", "variables de experiencia",
+"trimestral" como decisión). Verificación final: 7 pp, 0 Inf, 0 {,}, 0
+Missing character, 0 refs rotas, 0 inglés en risk table (título). JUDGMENT:
+APPROVED sin rondas de fix. Pendientes: micro-lote de redacción reportado a
+Tony.
+
+L9 (2026-11-10): ciclo 4 completo tras micro-lote (commit 9afc2ba).
+Descubrimiento: CERO severos (jueces A/B) + asesor 7/7 ✅. Solo
+informativos convergentes: IC de Gasto a 4 decimales, p=0.054 del caption
+-> inline, "15 variables"/"10 numéricas" -> inline, outliers sin
+Customer_ID, género en español (Fig. 1), glifo residual en risk table,
+leyenda "Canceló suscripción" truncada, gradiente de Fig. 3 sin semántica
+churn. Verificación final: 7 pp, 0 Inf, 0 Missing character, 0 refs rotas.
+JUDGMENT: APPROVED sin fix rounds. Se aplica el pulido final consolidado.
+
+L10 (2026-11-10): pulido final del ciclo 4 aplicado (commit 9ab11ab):
+género en español (Fig. 1), IC a 4 decimales (Gasto [0.9995, 1.0639]),
+p=0.054 inline en caption, n_duplicados/n_perdidos/num_vars inline
+(num_vars_crudas capturado en lectura: ncol post-transformación da 19),
+outliers sin columnas derivadas, gradiente Fig. 3 neutro, antigüedad
+col_neutro, key residual de risk table eliminada (mutación de km_fig$table),
+leyenda "Canceló suscripción" en 2 líneas. Verificación final: 7 pp, 0
+Missing character, 0 refs rotas, 0 Strata/All/Number at risk, leyenda
+completa. ENTREGA CERRADA: 7 commits, asesor 7/7 ✅, JD APPROVED 4 ciclos.
+
+L11 (2026-11-10, corrección señalada por Tony): la reescritura había
+reemplazado la función tabla() de la compañera por un helper simplificado —
+sin column_spec (marco vertical), con longtable=FALSE, font_size 9 y colores
+cambiados. Restaurado el diseño original completo (dos ramas, bordes
+izq/der en primera y última columna, longtable, font_size 10) con dos
+mejoras aditivas: colores como variables de la paleta y parámetro anchos.
+Verificado en PDF: marco completo en Tablas 1 y 2. Pendientes aprobados en
+espera: Fig. 2 opción A (caja neutra + puntos por estado), portada opción
+2 (KPIs, mover escudo fuera del bloque navy) y tabla menta opcional.
+
+L12 (2026-11-10, segunda corrección de tablas señalada por Tony): faltaba el
+borde izquierdo y los separadores de columna en Tabla 1. Diagnóstico en el
+.tex: kableExtra triplica la spec de longtable cuando column_spec aplica
+bordes sobre anchos m{}/p{} (bug; el diseño original nunca lo sufría por
+usar solo c), y también se triplica si el align lleva barras. Solución en
+tabla(): construir la spec sin barras e inyectar el marco completo
+(|m{1.8cm}|m{2.2cm}|p{9.4cm}| / |c|c|c|c|) directamente en la línea
+begin{longtable}, más \endhead para repetir el encabezado en cada página de
+la tabla partida. Verificado: marco completo en Tablas 1 y 2, encabezado
+repetido, 7 pp, 0 errores LaTeX, 0 Missing character, 0 refs rotas.
+Pendientes en cola: Fig. 2 opción A, portada opción 2, tabla menta.
+
+L13 (2026-11-10, aprobación de Tony): aplicados los dos diseños elegidos.
+Fig. 2 → opción A: caja blanca con contorno navy + geom_jitter coloreado por
+estado (outlier.shape=NA, width 0.16, alpha 0.55), leyenda compartida con
+plot_layout(guides="collect") en top, caption actualizado. Portada → opción
+2: tikz overlay en preambulo.tex (\usepackage{tikz}, colores Port*),
+bloque navy con pregunta de negocio, 4 KPIs (cifras manuales, nota de
+sincronización en comentario), línea de decisión, \Autores y escudo en zona
+blanca abajo-derecha; \clearpage retirado (duplicaba salto ya existente ->
+página vacía). Verificado: 7 pp (portada + 6), 0 Missing character, 0 refs
+rotas, 0 errores LaTeX; Fig. 2 estilo A y portada 2 confirmadas
+visualmente. Pendiente opcional: tabla menta (no autorizada aún).
+
+L14 (2026-11-10, petición de Tony): identidad Divvy — intro y planteamiento
+sin "la empresa que nos contrató"/"tienda en línea"; \TituloTarea →
+"Retención de clientes en Divvy" (portada + encabezados, 0 menciones de
+"Tarea Práctica 5" en el PDF); línea de decisión partida en 2 líneas desde
+":" y nodos de portada a 17.8cm (márgenes limpios). KPI 4 "segmentos con
+señal" en revisión: alternativas presentadas a Tony (pendiente elección).
+
+L15 (2026-11-10, decisión de Tony): retirado el 4º KPI "segmentos con
+señal" de la portada — fila de 3 KPIs (1,000 · 52.6% · 269 días) en un solo
+renglón, márgenes limpios. El mensaje "sin señal" permanece en el hallazgo
+central y en la línea de decisión.
+
+L16 (2026-11-10, decisión de Tony): sustituidos los anglicismos —
+"re-engagement" → "recuperación de clientes" (intro, impl 1, portada) y
+"re-instrumentación/re-instrumentar" → "rediseño del registro de datos /
+mejorar el registro de datos" (intro, impl 3, portada). Tony editó a mano la
+intro: "modificación a su servicio" (cambio ignorado por ahora, no
+propagado, según su instrucción) y ajustó el espaciado de la línea de
+decisión de la portada (\[-3mm], mantenido). 0 anglicismos en el PDF; 7 pp,
+compilación limpia.
+
+L17 (2026-11-10, decisión de Tony): opción 5 aplicada en los 3 lugares —
+"ciclo de recuperación de clientes durante sus primeros 6 meses de
+inactividad — antes del día 180 desde su última compra —". Los "6 meses"
+salen de r inline (round(umbral_dias/30.4)); portada en un solo párrafo
+envuelto por el nodo. Compilación limpia, 7 pp.
+
+L18 (2026-11-10): prosa de limpieza simplificada (la Tabla 1 carga el
+detalle; el texto da el veredicto: base limpia, nadie eliminado) + recortes
+manuales de Tony integrados. Reporte de sus cambios manuales entregado.
+
+L20 (2026-11-10): prosa del contraste por segmentos sin H0 en la línea
+argumental — la prueba se declara en una nota técnica al pie (registro que ya
+usaba la nota de cox.zph). Se corrigió "confirman la segunda pregunta" (error
+de categoría) por "responden"; se quitó "estadísticamente detectable"; caption
+de Fig. 6 a 3 decimales (consistente con el texto); pval = TRUE retirado de
+ambos paneles (tercera copia del mismo número). Efecto lateral: 7 -> 8 pp
+(dentro del tope duro, página final al ~40%); el párrafo acortado queda en p. 4
+y Figura 6 en p. 7 — desplazamiento de flotantes que YA existía en el PDF
+anterior (verificado contra HEAD), agravado por una página.

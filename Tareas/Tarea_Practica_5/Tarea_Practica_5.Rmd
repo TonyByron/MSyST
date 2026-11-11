@@ -504,25 +504,26 @@ km_fig$table <- km_fig$table + ylab(NULL) +  # sin eje-y en la tabla: elimina la
 km_fig
 ```
 
-Las comparaciones por segmento (Figura \@ref(fig:km-segmentos)) confirman la
-segunda pregunta. Para la satisfacción se prueba H0: la permanencia es igual
-entre clientes con satisfacción baja y alta, contra la alternativa de que
-difiere; las curvas de satisfacción baja (`r num(n_baja, 0)` clientes) y alta
-(`r num(n_alta, 0)`) se traslapan (log-rank p = `r num(p_lr_sat, 3)`). La misma
-prueba entre quienes respondieron, ignoraron o cancelaron su suscripción a las
-promociones tampoco detecta diferencias (p = `r num(p_lr_prom, 3)`). Ninguna
-diferencia es estadísticamente detectable.
+Las comparaciones por segmento responden la segunda pregunta: no se distingue
+un segmento que fuga más rápido. Clientes con satisfacción baja
+(`r num(n_baja, 0)`) y alta (`r num(n_alta, 0)`) no muestran diferencias de
+permanencia (log-rank p = `r num(p_lr_sat, 3)`); entre quienes respondieron,
+ignoraron o cancelaron su suscripción a las promociones tampoco se detectan
+(p = `r num(p_lr_prom, 3)`).
 
-```{r km-segmentos, fig.cap=paste0("Permanencia según satisfacción y respuesta a promociones: las curvas se traslapan (log-rank p=", num(p_lr_sat, 2), " y p=", num(p_lr_prom, 2), "); ningún segmento retiene mejor que otro."), fig.width=6.4, fig.height=3.2}
+**Nota técnica.** Contraste de igual permanencia entre grupos (prueba log-rank;
+H0 = misma curva de supervivencia); ningún p alcanza 0.05.
+
+```{r km-segmentos, fig.cap=paste0("Permanencia según satisfacción y respuesta a promociones: las curvas se traslapan (log-rank p=", num(p_lr_sat, 3), " y p=", num(p_lr_prom, 3), "); ningún segmento retiene mejor que otro."), fig.width=6.4, fig.height=3.2}
 # Figura 6: Kaplan–Meier por segmentos =================================================================================
-g_sat <- ggsurvplot(km_sat, data = datos, pval = TRUE,
+g_sat <- ggsurvplot(km_sat, data = datos,
                     palette = c(col_neutro, col_acento),
                     xlab = "Días", ylab = "Permanencia",
                     legend.labs = c("Satisfacción baja", "Satisfacción alta"),
                     ggtheme = tema_reporte)$plot +
   theme(legend.position = "bottom")
 
-g_prom <- ggsurvplot(km_prom, data = datos, pval = TRUE,
+g_prom <- ggsurvplot(km_prom, data = datos,
                      palette = colores_segmentos,
                      xlab = "Días", ylab = NULL,
                      legend.labs = c("Ignoró promo", "Respondió", "Canceló\nsuscripción"),
