@@ -252,31 +252,25 @@ Divvy opera la renta de bicicletas en línea y quiere saber qué
 modificación a su servicio mejoraría la rentabilidad. El análisis de la
 información recolectada en el último año (`r num(num_clientes, 0)` clientes)
 arroja un hallazgo incómodo pero accionable: **ningún rasgo observable del
-cliente anticipa su fuga** — edad, ingreso, gasto, devoluciones, soporte,
-satisfacción y respuesta a promociones discriminan igual entre quienes abandonan
-y quienes no. El riesgo es de **`r num(100 * pct_churn)`% en el año, presente
-todo el año con aceleración al final**.
+cliente anticipa su fuga**.
 
 La consecuencia directa para el negocio: esperar señales para retener no
 funciona con estos datos, así que la acción recomendada es un
-**ciclo de recuperación de clientes durante sus primeros `r round(umbral_dias / 30.4)` meses de inactividad** —
-antes del día `r num(umbral_dias, 0)` desde su última compra, cuando la permanencia
-aún es del `r num(100 * p180)`% —,
+**ciclo de recuperación de clientes durante sus primeros `r round(umbral_dias / 30.4)` meses de inactividad**,
 más un **rediseño del registro de datos de los clientes**
 para que el siguiente análisis sí pueda detectar segmentos de riesgo.
 
 # Planteamiento del problema y propuesta
 
-Divvy renta bicicletas a una base amplia de usuarios cuya actividad se mide
-por compras del servicio; el
+Divvy renta bicicletas a una base amplia de usuarios; el
 servicio incluye promociones, atención a soporte y comunicación por correo.
 La dirección pregunta qué cambiar en el servicio para retener más clientes:
 cada punto de retención preserva el ingreso que el cliente genera sin costo de
 adquisición.
 
 Realizamos un **análisis de supervivencia**, que estudia
-*cuánto tarda en ocurrir un evento*. Aquí el evento es la *fuga*
-(el cliente marcado como abandonado) y el tiempo es la *inactividad*:
+**_cuánto tarda en ocurrir un evento_**. Aquí el _evento_ es la **_fuga_**
+(el cliente marcado como abandonado) y el _tiempo_ es la **_inactividad_**:
 los días transcurridos desde su última compra.
 Esta técnica aporta dos herramientas útiles para decidir:
 
@@ -324,26 +318,33 @@ transformaciones <- data.frame(
 tabla(transformaciones, caption = "Decisiones de limpieza y construcción de variables (antes → después).", anchos = "m{1.8cm}m{2.2cm}p{9.4cm}")
 ```
 
-La construcción del **par de supervivencia** merece nota explícita: el *evento*
-es `Target_Churn` (1 = fugado) y el *tiempo* es `Last_Purchase_Days_Ago`
-(inactividad al cierre del año). Los clientes sin fuga quedan **censurados**:
+La construcción del **par de supervivencia** merece nota explícita:  
+
+* El *evento* es `Target_Churn` (1 = fugado).
+* El *tiempo* es `Last_Purchase_Days_Ago` (inactividad al cierre del año).
+
+Los clientes sin fuga quedan **censurados**:
 sabemos que seguían activos hasta su última compra, entre los días
 `r num(dias_min, 0)` y `r num(dias_max, 0)` del año, pero no su vida completa.
-La limitación que esto impone — la fuga se mide contra la última compra y no
-contra una fecha de baja declarada — se retoma en las conclusiones.
+La fuga se mide contra la última compra y no
+contra una fecha de baja declarada.
 
 # ¿Quiénes son y cómo compran? (exploración)
 
-El perfil del cliente es amplio y balanceado: edades de
-`r num(edad_rango[1], 0)` a `r num(edad_rango[2], 0)` años, ingresos anuales de
-`r num(ingreso_rango[1], 0)` a `r num(ingreso_rango[2], 0)` miles de dólares,
-antigüedad de `r num(antig_rango[1], 0)` a `r num(antig_rango[2], 0)` años y
-género repartido en tres tercios (Figura \@ref(fig:perfil)). El comportamiento
-de compra es igualmente disperso y sin valores extremos: de
-`r num(compras_rango[1], 0)` a `r num(compras_rango[2], 0)` compras al año,
-gasto total de `r num(gasto_rango[1], 0)` a `r num(gasto_rango[2], 0)` dólares
-y transacciones promedio de `r num(trans_rango[1], 0)` a
-`r num(trans_rango[2], 0)` dólares (Figura \@ref(fig:extremos)).
+El perfil del cliente es amplio y balanceado:
+
+* Edades de `r num(edad_rango[1], 0)` a `r num(edad_rango[2], 0)` años.
+* Ingresos anuales de `r num(ingreso_rango[1], 0)` a `r num(ingreso_rango[2], 0)` (en miles de dólares).
+* Antigüedad de `r num(antig_rango[1], 0)` a `r num(antig_rango[2], 0)` años.
+* Género repartido en tres tercios (Figura \@ref(fig:perfil)).
+
+El comportamiento
+de compra es igualmente disperso y sin valores extremos:
+
+* De `r num(compras_rango[1], 0)` a `r num(compras_rango[2], 0)` compras al año.
+* Gasto total de `r num(gasto_rango[1], 0)` a `r num(gasto_rango[2], 0)` dólares.
+* Transacciones promedio de `r num(trans_rango[1], 0)` a `r num(trans_rango[2], 0)`
+dólares (Figura \@ref(fig:extremos)).
 
 ```{r perfil, fig.cap="Perfil de los clientes: ninguna característica demográfica concentra a la base; el público es heterogéneo y balanceado.", fig.width=6.4, fig.height=4.4}
 # Figura 1: perfil demográfico y económico (4 paneles) =================================================================
@@ -371,7 +372,7 @@ p_antiguedad <- ggplot(datos, aes(Years_as_Customer)) +
   plot_annotation(theme = tema_reporte)
 ```
 
-```{r extremos, fig.cap="Diagramas de caja con cada cliente como punto, coloreado por su estado (rojo = fugado, verde = activo): no hay valores extremos fuera de 1.5×IQR en ninguna variable; no se requirió truncado ni winsorización.", fig.width=6.4, fig.height=3.8}
+```{r extremos, fig.cap="Diagramas de caja con cada cliente como punto, coloreado por su estado (rojo = fugado, verde = activo): no hay valores extremos en ninguna variable.", fig.width=6.4, fig.height=3.8}
 # Figura 2: cajas de comportamiento (detección de extremos) ============================================================
 # Estilo A: caja neutra + cada cliente como punto coloreado por su estado
 p_caja_spend <- ggplot(datos, aes(Estado, Total_Spend)) +
@@ -409,11 +410,10 @@ p_caja_dias <- ggplot(datos, aes(Estado, Last_Purchase_Days_Ago)) +
   theme(legend.position = "top")
 ```
 
-Las variables numéricas entre sí prácticamente no se correlacionan
+Las variables numéricas prácticamente no se correlacionan entre sí
 (Figura \@ref(fig:correlaciones)): no existe un "cliente grande" (mucho ingreso
 y mucho gasto, muchas compras) ni combinaciones de variables que agrupen a la
-base. Esta primera señal — la base no tiene segmentos naturales — anticipa el
-hallazgo central del análisis de supervivencia.
+base. Esta primera señal anticipa el hallazgo central del análisis de supervivencia.
 
 ```{r correlaciones, fig.cap="Correlaciones entre variables numéricas: todas cercanas a cero; la base no tiene segmentos naturales.", fig.width=4.6, fig.height=3.4}
 # Figura 3: mapa de calor de correlaciones =============================================================================
@@ -472,15 +472,16 @@ primera pregunta: la fuga **no se concentra en ningún periodo**. El abandono se
 acumula a un ritmo promedio de `r num(ritmo_dia, 2)` clientes por día: el
 riesgo es plano durante la mayor parte del año y se acelera al final, en la
 cola de la distribución de inactividad (Figura
-\@ref(fig:km-global)). La permanencia es del
+\@ref(fig:km-global)).
+
+La permanencia individual es del
 `r num(100 * p30)`% al día `r round(umbral_dias / 6)`, `r num(100 * p90)`% al día 90 y
-`r num(100 * p180)`% al día `r umbral_dias`; la mediana de "sobrevivencia" es de
-`r num(mediana_dias, 0)` días (IC 95%: `r num(ic_mediana[1], 0)`–`r num(ic_mediana[2], 0)`),
-es decir, la mitad de la base habría fugado hacia los
-`r round(mediana_dias / 30.4)` meses de inactividad.
+`r num(100 * p180)`% al día `r umbral_dias` (desde la última compra del cliente); la mediana de "sobrevivencia" es de
+`r num(mediana_dias, 0)` días,
+es decir, **la mitad de la base habría fugado hacia los
+`r round(mediana_dias / 30.4)` meses de inactividad**.
 Parte de la aceleración final de la curva refleja el cierre de la
-ventana de observación (un cliente solo puede acumular hasta `r dias_max` días de
-inactividad) y no un cambio de comportamiento.
+ventana de observación y no un cambio de comportamiento.
 
 ```{r km-global, fig.cap=paste0("Kaplan–Meier global: la permanencia cae de manera pareja la mayor parte del año y se acelera al final (cola de inactividad); la mitad de la base habría fugado hacia el día ", num(mediana_dias, 0), ". La acción de retención debe activarse antes del día ", num(umbral_dias, 0), "."), fig.width=5.6, fig.height=4}
 # Figura 5: curva global con tabla de riesgo ===========================================================================
