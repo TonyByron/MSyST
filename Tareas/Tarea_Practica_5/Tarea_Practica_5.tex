@@ -109,7 +109,7 @@
 % ============================================================
 % Identidad del documento: conservar estos comandos
 % ============================================================
-\newcommand{\materia}{Modelos de Supervivencia y Series de Tiempo}
+\newcommand{\materia}{Divvy · Renta de bicicletas en línea}
 \newcommand{\TituloTarea}{Retención de clientes en Divvy}
 %\newcommand{\Tony}{\textsc{Anthonie Byron Ornelas Clement}}
 
@@ -128,7 +128,7 @@
 % ============================================================
 \definecolor{PortNavy}{HTML}{264653}
 \definecolor{PortTeal}{HTML}{2A9D8F}
-\definecolor{PortFuga}{HTML}{E63946}
+\definecolor{PortFuga}{HTML}{F77F00}
 \definecolor{PortAcento}{HTML}{F77F00}
 \definecolor{PortMuted}{HTML}{65727A}
 
@@ -153,9 +153,11 @@
       \end{tabular}\\[0.9cm]
       {\sffamily\color{PortTeal}\rule{17.8cm}{1.6pt}}\\[0.35cm]
       {\sffamily\small\color{PortNavy}\bfseries Decisión que este informe sostiene:}\\[-3mm]
-      {\sffamily\small\color{PortNavy}ciclo de recuperación de clientes durante los primeros 6 meses de inactividad y un rediseño del registro de datos.}\\[1.0cm]
-      {\sffamily\color{PortNavy}\Autores}
+      {\sffamily\small\color{PortNavy}ciclo de recuperación de clientes durante los primeros 6 meses de inactividad y un rediseño del registro de datos.}
     };
+    \node[anchor=south west] at ([xshift=1.6cm,yshift=1.2cm]current page.south west) {%
+      \sffamily\footnotesize\color{PortNavy}%
+      \begin{tabular}{@{}l@{}}\Autores\end{tabular}};
     \node[anchor=south east] at ([xshift=-1.4cm,yshift=1.2cm]current page.south east) {\includegraphics[height=2.4cm]{escudo0.png}};
   \end{tikzpicture}%
 }
@@ -444,7 +446,7 @@ de compra es igualmente disperso y sin valores extremos:
 
 }
 
-\caption{Diagramas de caja con cada cliente como punto, coloreado por su estado (rojo = fugado, verde = activo): no hay valores extremos en ninguna variable.}\label{fig:extremos}
+\caption{Diagramas de caja con cada cliente como punto, coloreado por su estado (naranja = fugado, verde = activo): no hay valores extremos en ninguna variable.}\label{fig:extremos}
 \end{figure}
 
 Las variables numéricas prácticamente no se correlacionan entre sí
@@ -477,7 +479,7 @@ aparece ningún contraste: la distribución es la misma entre fugados y activos.
 
 }
 
-\caption{Fuga frente a satisfacción, soporte y promociones: las distribuciones de fugados (rojo) y activos (verde) son indistinguibles en toda variable.}\label{fig:churn-rel}
+\caption{Fuga frente a satisfacción, soporte y promociones: las distribuciones de fugados (naranja) y activos (verde) son indistinguibles en toda variable.}\label{fig:churn-rel}
 \end{figure}
 
 \section{¿Cuándo se van los clientes? (análisis de supervivencia)}\label{cuuxe1ndo-se-van-los-clientes-anuxe1lisis-de-supervivencia}
@@ -583,8 +585,9 @@ cercana (gasto total, p = 0.054) no alcanza el umbral de 0.05.
 pocos.} Con 52.6\% de fuga anual, sin segmentos
 distinguibles y con un riesgo que solo se acelera al final del año, un programa de retención dirigido a
 ``clientes en riesgo'' no tiene a dónde apuntar: las señales disponibles no
-anticipan nada. Que nada anticipe la fuga no deja la recomendación vacía:
-indica que el abandono responde al ciclo de uso del servicio y no a su perfil.
+anticipan nada. Que nada anticipe la fuga no deja la recomendación vacía: si
+ningún perfil registrado se asocia con el abandono, la acción no puede
+segmentarse por perfil y tiene que apoyarse en el tiempo de inactividad.
 
 \textbf{La modificación al servicio que este análisis sostiene} es un
 \textbf{\emph{ciclo de recuperación de clientes durante sus primeros 6
@@ -598,7 +601,8 @@ análisis no puede fijar con estos datos.
 escalarlas.} Fugas y permanencia se comportan igual entre quienes respondieron
 y quienes cancelaron su suscripción a la campaña.\\
 Antes de invertir más en la campaña, hay que rediseñarla para que sea capaz de mover la
-retención.
+retención. Los contactos a soporte tampoco se asocian con la retención: HR de
+1.03 por contacto (p = 0.332).
 
 \textbf{3. Mejorar el registro de datos de los clientes es la modificación de mayor valor
 a largo plazo.} Este análisis se limita por cómo se capturó la información: no

@@ -46,9 +46,9 @@ library(scales)      # formato de números en ejes (label_comma, label_percent)
 ```{r helpers, include=FALSE}
 # Paleta del reporte, tema y formato común de tablas ===================================================================
 # Paleta retail en línea: semántica estable en todo el reporte.
-col_fuga        <- "#E63946"  # rojo      = fuga (cliente que abandona)
+col_fuga        <- "#F77F00"  # naranja   = fuga (cliente que abandona)
 col_retencion   <- "#2A9D8F"  # verde     = retención (cliente activo)
-col_acento      <- "#F77F00"  # naranja   = acento para hallazgos destacados
+col_acento      <- "#F77F00"  # naranja   = acento para hallazgos destacados (mismo tono que la fuga)
 col_neutro      <- "#264653"  # azul      = variables descriptivas neutras
 col_encabezado  <- "#264653"  # encabezado de tablas
 col_zebra       <- "#F1FAEE"  # renglones alternados
@@ -58,7 +58,7 @@ colores_churn <- c("Fugado"  = col_fuga,
 
 colores_perfil <- c(col_neutro, col_acento, col_retencion, "#8338EC")
 
-# Paleta de segmentos de respuesta: sin rojo/verde de churn para no chocar con
+# Paleta de segmentos de respuesta: sin naranja/verde de churn para no chocar con
 # la semántica fuga/retención de las figuras de fuga
 colores_segmentos <- c("#457B9D", "#E9C46A", "#7B6D8D")
 
@@ -208,6 +208,8 @@ cox_min_p     <- min(cf[, 5])
 ph_global_p   <- cox.zph(modelo_cox)$table["GLOBAL", "p"]
 hr_prom_resp  <- exp(cf[grep("^Promotion_ResponseRespondió$", rownames(cf)), 1])
 ic_prom_resp  <- exp(confint(modelo_cox)[grep("^Promotion_ResponseRespondió$", rownames(cf)), ])
+hr_soporte    <- exp(cf["Num_of_Support_Contacts", 1])   # una unidad = un contacto a soporte
+p_soporte     <- cf["Num_of_Support_Contacts", 5]
 
 # HR re-escalados a unidades interpretables: gasto total y transacción promedio por cada 1,000 USD
 # (el efecto por 1 USD es invisible a 3 decimales; el escalar es exp(beta * 1000))
@@ -372,7 +374,7 @@ p_antiguedad <- ggplot(datos, aes(Years_as_Customer)) +
   plot_annotation(theme = tema_reporte)
 ```
 
-```{r extremos, fig.cap="Diagramas de caja con cada cliente como punto, coloreado por su estado (rojo = fugado, verde = activo): no hay valores extremos en ninguna variable.", fig.width=6.4, fig.height=3.8}
+```{r extremos, fig.cap="Diagramas de caja con cada cliente como punto, coloreado por su estado (naranja = fugado, verde = activo): no hay valores extremos en ninguna variable.", fig.width=6.4, fig.height=3.8}
 # Figura 2: cajas de comportamiento (detección de extremos) ============================================================
 # Estilo A: caja neutra + cada cliente como punto coloreado por su estado
 p_caja_spend <- ggplot(datos, aes(Estado, Total_Spend)) +
@@ -441,7 +443,7 @@ aparece ningún contraste: la distribución es la misma entre fugados y activos.
 **sin tendencia entre `r num(100 * rango_pct[1])`% y
 `r num(100 * rango_pct[2])`%** en todas las ventanas del año.
 
-```{r churn-rel, fig.cap="Fuga frente a satisfacción, soporte y promociones: las distribuciones de fugados (rojo) y activos (verde) son indistinguibles en toda variable.", fig.width=6.4, fig.height=3.2}
+```{r churn-rel, fig.cap="Fuga frente a satisfacción, soporte y promociones: las distribuciones de fugados (naranja) y activos (verde) son indistinguibles en toda variable.", fig.width=6.4, fig.height=3.2}
 # Figura 4: relación de cada variable con la fuga ======================================================================
 p_sat <- ggplot(datos, aes(Estado, Satisfaction_Score, fill = Estado)) +
   geom_boxplot() +
@@ -560,8 +562,9 @@ tabla(tabla_cox_fmt,
 pocos.** Con `r num(100 * pct_churn)`% de fuga anual, sin segmentos
 distinguibles y con un riesgo que solo se acelera al final del año, un programa de retención dirigido a
 "clientes en riesgo" no tiene a dónde apuntar: las señales disponibles no
-anticipan nada. Que nada anticipe la fuga no deja la recomendación vacía:
-indica que el abandono responde al ciclo de uso del servicio y no a su perfil.
+anticipan nada. Que nada anticipe la fuga no deja la recomendación vacía: si
+ningún perfil registrado se asocia con el abandono, la acción no puede
+segmentarse por perfil y tiene que apoyarse en el tiempo de inactividad.
 
 **La modificación al servicio que este análisis sostiene** es un
 **_ciclo de recuperación de clientes durante sus primeros `r round(umbral_dias / 30.4)`
@@ -575,7 +578,8 @@ análisis no puede fijar con estos datos.
 escalarlas.** Fugas y permanencia se comportan igual entre quienes respondieron
 y quienes cancelaron su suscripción a la campaña.  
 Antes de invertir más en la campaña, hay que rediseñarla para que sea capaz de mover la
-retención.
+retención. Los contactos a soporte tampoco se asocian con la retención: HR de
+`r num(hr_soporte, 2)` por contacto (p = `r num(p_soporte, 3)`).
 
 **3. Mejorar el registro de datos de los clientes es la modificación de mayor valor
 a largo plazo.** Este análisis se limita por cómo se capturó la información: no
