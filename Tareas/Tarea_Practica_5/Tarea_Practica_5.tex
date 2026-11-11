@@ -452,7 +452,7 @@ Las variables numéricas prácticamente no se correlacionan entre sí
 y mucho gasto, muchas compras) ni combinaciones de variables que agrupen a la
 base. Esta primera señal anticipa el hallazgo central del análisis de supervivencia.
 
-\begin{figure}
+\begin{figure}[H]
 
 {\centering \includegraphics{Tarea_Practica_5_files/figure-latex/correlaciones-1} 
 
@@ -460,6 +460,8 @@ base. Esta primera señal anticipa el hallazgo central del análisis de superviv
 
 \caption{Correlaciones entre variables numéricas: todas cercanas a cero; la base no tiene segmentos naturales.}\label{fig:correlaciones}
 \end{figure}
+
+\newpage
 
 \section{¿Qué distingue a quien fuga? (comparación inicial)}\label{quuxe9-distingue-a-quien-fuga-comparaciuxf3n-inicial}
 
@@ -487,6 +489,15 @@ riesgo es plano durante la mayor parte del año y se acelera al final, en la
 cola de la distribución de inactividad (Figura
 \ref{fig:km-global}).
 
+\begin{figure}[H]
+
+{\centering \includegraphics{Tarea_Practica_5_files/figure-latex/km-global-1} 
+
+}
+
+\caption{Kaplan–Meier global: la permanencia cae de manera pareja la mayor parte del año y se acelera al final (cola de inactividad); la mitad de la base habría fugado hacia el día 269. La acción de retención debe activarse antes del día 180.}\label{fig:km-global}
+\end{figure}
+
 La permanencia individual es del
 94.9\% al día 30, 85.9\% al día 90 y
 70.4\% al día 180 (desde la última compra del cliente); la mediana de ``sobrevivencia'' es de
@@ -496,24 +507,24 @@ es decir, \textbf{la mitad de la base habría fugado hacia los
 Parte de la aceleración final de la curva refleja el cierre de la
 ventana de observación y no un cambio de comportamiento.
 
-\begin{figure}
+Las comparaciones por segmento (Figura \ref{fig:km-segmentos}) responden la
+segunda pregunta: no se distingue
+un segmento que fuga más rápido.
 
-{\centering \includegraphics{Tarea_Practica_5_files/figure-latex/km-global-1} 
+\begin{itemize}
+\tightlist
+\item
+  Clientes con satisfacción baja (394) y alta (606)
+  no muestran diferencias de permanencia (log-rank p = 0.230)
+\item
+  Entre quienes respondieron,
+  ignoraron o cancelaron su suscripción a las promociones tampoco se detectan diferencias
+  (p = 0.509).
+\end{itemize}
 
-}
-
-\caption{Kaplan–Meier global: la permanencia cae de manera pareja la mayor parte del año y se acelera al final (cola de inactividad); la mitad de la base habría fugado hacia el día 269. La acción de retención debe activarse antes del día 180.}\label{fig:km-global}
-\end{figure}
-
-Las comparaciones por segmento responden la segunda pregunta: no se distingue
-un segmento que fuga más rápido. Clientes con satisfacción baja
-(394) y alta (606) no muestran diferencias de
-permanencia (log-rank p = 0.230); entre quienes respondieron,
-ignoraron o cancelaron su suscripción a las promociones tampoco se detectan
-(p = 0.509).
-
-\textbf{Nota técnica.} Contraste de igual permanencia entre grupos (prueba log-rank;
-H0 = misma curva de supervivencia); ningún p alcanza 0.05.
+\begin{notatecnica}
+  Contraste de igual permanencia entre grupos (prueba log-rank; H0 = misma curva de supervivencia); ningún p alcanza 0.05.
+\end{notatecnica}
 
 \begin{figure}
 
@@ -524,21 +535,18 @@ H0 = misma curva de supervivencia); ningún p alcanza 0.05.
 \caption{Permanencia según satisfacción y respuesta a promociones: las curvas se traslapan (log-rank p=0.230 y p=0.509); ningún segmento retiene mejor que otro.}\label{fig:km-segmentos}
 \end{figure}
 
-Para ponderar todas las variables a la vez, ajustamos el modelo de Cox, que
-estima cuánto multiplica cada característica el riesgo de fuga manteniendo el
-resto constante (Tabla \ref{tab:cox-tabla}). La lectura ejecutiva de la tabla:
-\textbf{ningún hazard ratio se aleja de 1.0 con confianza} --- el intervalo de cada
-variable incluye al 1.0 --- y la significancia más cercana (gasto total,
-p = 0.054) no alcanza el umbral convencional de 0.05. Para
-validar las estimaciones se prueba H0: los riesgos proporcionales se mantienen
-en el tiempo (supuesto del modelo); \textbf{no se detecta violación del supuesto}
-(prueba global p = 0.77), de modo que las estimaciones son
-válidas; lo que dicen es simplemente que no hay efectos.
+Para ponderar todas las variables a la vez, el modelo de Cox estima cuánto
+multiplica cada característica el riesgo de fuga manteniendo el resto constante
+(Tabla \ref{tab:cox-tabla}). \textbf{Ninguna razón de riesgo (HR) se separa de 1.0 de
+forma apreciable}: el intervalo de cada variable contiene al 1.0, y la más
+cercana (gasto total, p = 0.054) no alcanza el umbral de 0.05.
+
+\newpage
 
 \begingroup\fontsize{10}{12}\selectfont
 
 \begin{longtable}[t]{|c|c|c|c|}
-\caption{\label{tab:cox-tabla}Modelo de Cox: hazard ratios (HR) por variable. HR > 1 aumenta el riesgo de fuga; ningún intervalo excluye al 1.0 (el de Gasto lo roza por arriba, p = 0.054) → ningún efecto detectable.}\\
+\caption{\label{tab:cox-tabla}Modelo de Cox: razones de riesgo (HR) por variable. HR > 1 aumenta el riesgo de fuga; ningún intervalo excluye al 1.0 (el de Gasto lo roza por arriba, p = 0.054) → ningún efecto detectable.}\\
 \hline
 \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{Variable}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{HR}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{IC}}} & \cellcolor[HTML]{264653}{\textcolor{white}{\textbf{p}}}\\\endhead
 \hline
@@ -576,42 +584,35 @@ pocos.} Con 52.6\% de fuga anual, sin segmentos
 distinguibles y con un riesgo que solo se acelera al final del año, un programa de retención dirigido a
 ``clientes en riesgo'' no tiene a dónde apuntar: las señales disponibles no
 anticipan nada. Que nada anticipe la fuga no deja la recomendación vacía:
-indica que el abandono responde al ciclo de uso del servicio --- cuándo dejó de
-usarlo el cliente --- y no a su perfil. La modificación al servicio que este análisis sostiene es un
-\textbf{ciclo de recuperación de clientes durante sus primeros 6
-meses de inactividad}: contacto preventivo a toda la base antes del día
+indica que el abandono responde al ciclo de uso del servicio y no a su perfil.
+
+\textbf{La modificación al servicio que este análisis sostiene} es un
+\textbf{\emph{ciclo de recuperación de clientes durante sus primeros 6
+meses de inactividad}}: contacto preventivo a toda la base antes del día
 180 desde su última compra (cuando la permanencia sigue en
-70.4\%) --- por ejemplo, incentivo de recompra y recordatorio de valor.
-La cadencia de
-repetición (p.~ej. trimestral) es una decisión de implementación que este
+70.4\%) --- por ejemplo, incentivo de recompra y recordatorio de valor.\\
+La cadencia de repetición es una decisión de implementación que este
 análisis no puede fijar con estos datos.
 
 \textbf{2. Las promociones actuales no muestran efecto medible; no conviene
 escalarlas.} Fugas y permanencia se comportan igual entre quienes respondieron
-y quienes cancelaron su suscripción a la campaña
-(p = 0.509; HR de 1.04, IC 95\%
-\texttt{{[}0.84,\ 1.30{]}}). Antes de
-invertir más en la campaña, hay que rediseñarla para que sea capaz de mover la
+y quienes cancelaron su suscripción a la campaña.\\
+Antes de invertir más en la campaña, hay que rediseñarla para que sea capaz de mover la
 retención.
 
 \textbf{3. Mejorar el registro de datos de los clientes es la modificación de mayor valor
 a largo plazo.} Este análisis se limita por cómo se capturó la información: no
-hay fecha de alta, ni historial de compras fechado, ni fecha de baja --- solo un
-corte de ``días desde la última compra'' y una marca final de abandono. Rediseñar la
-captura de datos --- registrar fecha de alta, compras fechadas y fecha de baja, y
+hay fecha de alta, ni historial de compras fechado, ni fecha de baja. Rediseñar la
+captura de datos (registrar fecha de alta, compras fechadas y fecha de baja, y
 añadir frecuencia de uso semanal, calificación por trayecto y estación, y reportes
-de fallas o incidentes --- permitiría al equipo de análisis desarrollar modelos que
+de fallas o incidentes) permitiría al equipo de análisis desarrollar modelos que
 expliquen el comportamiento de los usuarios, detecten perfiles de riesgo y midan
 el efecto de las campañas para actuar oportunamente.
 
-\enlargethispage{1.5cm}
+\enlargethispage{1.3cm}
 
-\textbf{Nota técnica (para quien domina el tema).} Tiempo = \texttt{Last\_Purchase\_Days\_Ago}
-(1--364 días), evento = \texttt{Target\_Churn}
-(526 fugas en 1,000 clientes); censurados a la derecha
-sin fuga. Cox con todas las covariables de la Tabla 2: sin HR significativo;
-\texttt{cox.zph} global p = 0.77 (sin violación del supuesto de
-riesgos proporcionales). La base muestra patrones compatibles con datos simulados,
-por lo que las conclusiones de negocio son provisionales.
+\begin{notatecnica}
+  Tiempo = \texttt{Last\_Purchase\_Days\_Ago} (1–364 días), evento = \texttt{Target\_Churn} (526 fugas en 1,000 clientes); censurados a la derecha sin fuga. Cox con todas las covariables de la Tabla \ref{tab:cox-tabla}: ninguna razón de riesgo significativa; \texttt{cox.zph} global p = 0.77 (H0 de riesgos proporcionales: no se rechaza). La base muestra patrones compatibles con datos simulados, por lo que las conclusiones de negocio son provisionales.
+\end{notatecnica}
 
 \end{document}

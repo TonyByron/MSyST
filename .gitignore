@@ -3,3 +3,5 @@ Ejercicios/
 *.log
 *files/
 *.bak
+.Rproj.user
+.Rhistory
